@@ -51,6 +51,7 @@ enum MealType {
 model Product {
   id        Int             @id @default(autoincrement())
   name      String
+  icon      String?
   category  ProductCategory
   units     Int             @default(0)
   createdAt DateTime        @default(now())

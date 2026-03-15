@@ -56,18 +56,31 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
         </div>
 
         <form onSubmit={handleSubmit} className="px-4 pb-8 flex flex-col gap-4 overflow-y-auto">
-          {/* Nombre */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">Nombre</label>
-            <input
-              ref={firstInputRef}
-              name="name"
-              type="text"
-              defaultValue={product?.name ?? ""}
-              required
-              placeholder="Ej: Alitas de pollo"
-              className="h-12 px-3 rounded-xl border border-gray-200 bg-gray-50 text-base outline-none focus:border-emerald-500 focus:bg-white transition-colors"
-            />
+          {/* Icono + Nombre */}
+          <div className="flex gap-2">
+            <div className="flex flex-col gap-1.5 w-16 shrink-0">
+              <label className="text-sm font-medium text-gray-700">Icono</label>
+              <input
+                name="icon"
+                type="text"
+                defaultValue={product?.icon ?? ""}
+                placeholder="🥩"
+                maxLength={4}
+                className="h-12 px-2 rounded-xl border border-gray-200 bg-gray-50 text-2xl text-center outline-none focus:border-emerald-500 focus:bg-white transition-colors"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5 flex-1">
+              <label className="text-sm font-medium text-gray-700">Nombre</label>
+              <input
+                ref={firstInputRef}
+                name="name"
+                type="text"
+                defaultValue={product?.name ?? ""}
+                required
+                placeholder="Ej: Alitas de pollo"
+                className="h-12 px-3 rounded-xl border border-gray-200 bg-gray-50 text-base outline-none focus:border-emerald-500 focus:bg-white transition-colors"
+              />
+            </div>
           </div>
 
           {/* Categoría */}

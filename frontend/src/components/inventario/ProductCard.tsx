@@ -34,10 +34,15 @@ export default function ProductCard({ product, onEdit }: ProductCardProps) {
 
   return (
     <div className="flex items-center gap-3 px-4 py-3 bg-white border-b border-gray-100">
-      {/* Nombre */}
-      <span className="flex-1 text-base font-medium text-gray-900 truncate">
-        {product.name}
-      </span>
+      {/* Icono + Nombre */}
+      <div className="flex items-center gap-2 flex-1 min-w-0">
+        {product.icon && (
+          <span className="text-xl shrink-0">{product.icon}</span>
+        )}
+        <span className="text-base font-medium text-gray-900 truncate">
+          {product.name}
+        </span>
+      </div>
 
       {/* Controles de unidades */}
       <div className="flex items-center gap-2">
