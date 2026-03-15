@@ -1,7 +1,7 @@
 DEV_COMPOSE = docker-compose.dev.yml
 PROD_COMPOSE = docker-compose.prod.yml
 
-.PHONY: help up-dev down-dev build-dev logs-dev up-pro build-pro shell-app migrate studio setup regen
+.PHONY: help up-dev down-dev build-dev logs-dev up-pro build-pro shell-app migrate studio setup regen backup restore
 
 help: ## Mostrar esta ayuda
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -41,6 +41,20 @@ up-pro: ## Iniciar servicios de PRODUCCIÓN (build local)
 
 build-pro: ## Construir imagen de PRODUCCIÓN
 	docker compose -f $(PROD_COMPOSE) build
+
+# === Base de datos ===
+
+backup: ## Hacer backup de la BD → backups/plancome_YYYYMMDD_HHMMSS.db
+	@mkdir -p backups
+	@[ -f data/plancome.db ] || (echo "No existe data/plancome.db"; exit 1)
+	@cp data/plancome.db backups/plancome_$$(date +%Y%m%d_%H%M%S).db
+	@echo "✓ Backup guardado en backups/"
+
+restore: ## Restaurar backup (uso: make restore FILE=backups/plancome_XXX.db)
+	@[ -n "$(FILE)" ] || (echo "Error: indica el fichero → make restore FILE=backups/plancome_XXX.db"; exit 1)
+	@[ -f $(FILE) ] || (echo "Error: no existe $(FILE)"; exit 1)
+	@cp $(FILE) data/plancome.db
+	@echo "✓ BD restaurada desde $(FILE)"
 
 # === Setup ===
 
