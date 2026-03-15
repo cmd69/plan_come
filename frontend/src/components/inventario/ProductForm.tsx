@@ -3,16 +3,17 @@
 import { useTransition, useRef, useEffect } from "react";
 import { X } from "lucide-react";
 import { createProduct, updateProduct } from "@/actions/products";
-import { PRODUCT_CATEGORY_LABELS, PRODUCT_CATEGORY_EMOJIS, PRODUCT_CATEGORY_ORDER } from "@/lib/constants";
-import type { Product } from "@prisma/client";
+import type { Product, Category } from "@prisma/client";
 import { cn } from "@/lib/utils";
 
 interface ProductFormProps {
   product?: Product | null;
+  categories: Category[];
+  defaultCategory?: string;
   onClose: () => void;
 }
 
-export default function ProductForm({ product, onClose }: ProductFormProps) {
+export default function ProductForm({ product, categories, defaultCategory, onClose }: ProductFormProps) {
   const [isPending, startTransition] = useTransition();
   const firstInputRef = useRef<HTMLInputElement>(null);
 
@@ -35,13 +36,11 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
 
   return (
     <>
-      {/* Overlay — por encima del nav (z-50) */}
       <div
         className="fixed inset-0 bg-black/40 z-50"
         onClick={onClose}
       />
 
-      {/* Sheet — por encima del overlay */}
       <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl z-[60] max-h-[90vh] flex flex-col">
         <div className="flex items-center justify-between px-4 pt-4 pb-2 shrink-0">
           <h2 className="text-lg font-semibold text-gray-900">
@@ -88,16 +87,16 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
             <label className="text-sm font-medium text-gray-700">Categoría</label>
             <select
               name="category"
-              defaultValue={product?.category ?? ""}
+              defaultValue={product?.category ?? defaultCategory ?? ""}
               required
               className="h-12 px-3 rounded-xl border border-gray-200 bg-gray-50 text-base outline-none focus:border-emerald-500 focus:bg-white transition-colors appearance-none"
             >
               <option value="" disabled>
                 Selecciona una categoría
               </option>
-              {PRODUCT_CATEGORY_ORDER.map((cat) => (
-                <option key={cat} value={cat}>
-                  {PRODUCT_CATEGORY_EMOJIS[cat]} {PRODUCT_CATEGORY_LABELS[cat]}
+              {categories.map((cat) => (
+                <option key={cat.slug} value={cat.slug}>
+                  {cat.emoji} {cat.label}
                 </option>
               ))}
             </select>
