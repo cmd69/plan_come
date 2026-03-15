@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarDays, Package, ChefHat, ShoppingCart } from "lucide-react";
+import { CalendarDays, Package, ChefHat, ShoppingCart, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { href: "/inventario", label: "Inventario", Icon: Package },
   { href: "/platos", label: "Platos", Icon: ChefHat },
   { href: "/compra", label: "Compra", Icon: ShoppingCart },
+  { href: "/ajustes", label: "Ajustes", Icon: Settings },
 ];
 
 export default function BottomNav() {
@@ -28,7 +29,7 @@ export default function BottomNav() {
               isActive ? "text-emerald-600" : "text-gray-400"
             )}
           >
-            <Icon size={22} strokeWidth={isActive ? 2.5 : 1.8} />
+            <Icon size={20} strokeWidth={isActive ? 2.5 : 1.8} />
             <span className={cn("font-medium", isActive && "font-semibold")}>
               {label}
             </span>

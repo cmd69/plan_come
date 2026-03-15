@@ -1,12 +1,11 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { ProductCategory } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 export async function createProduct(formData: FormData) {
   const name = (formData.get("name") as string)?.trim();
-  const category = formData.get("category") as ProductCategory;
+  const category = (formData.get("category") as string)?.trim();
   const icon = (formData.get("icon") as string)?.trim() || null;
 
   if (!name || !category) return;
@@ -17,7 +16,7 @@ export async function createProduct(formData: FormData) {
 
 export async function updateProduct(id: number, formData: FormData) {
   const name = (formData.get("name") as string)?.trim();
-  const category = formData.get("category") as ProductCategory;
+  const category = (formData.get("category") as string)?.trim();
   const icon = (formData.get("icon") as string)?.trim() || null;
 
   if (!name || !category) return;
@@ -38,7 +37,6 @@ export async function updateUnits(id: number, delta: number) {
 }
 
 export async function deleteProduct(id: number) {
-  // Eliminar ítems de sesiones de compra que referencien este producto
   await prisma.shoppingSessionItem.deleteMany({ where: { productId: id } });
   await prisma.product.delete({ where: { id } });
   revalidatePath("/inventario");
