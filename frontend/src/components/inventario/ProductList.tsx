@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, ChevronDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 import type { Product } from "@prisma/client";
 import { PRODUCT_CATEGORY_LABELS, PRODUCT_CATEGORY_EMOJIS, PRODUCT_CATEGORY_ORDER } from "@/lib/constants";
 import ProductCard from "./ProductCard";
@@ -15,6 +16,15 @@ export default function ProductList({ products }: ProductListProps) {
   const [formProduct, setFormProduct] = useState<Product | null | undefined>(
     undefined // undefined = cerrado; null = nuevo; Product = editar
   );
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+
+  function toggleSection(category: string) {
+    setCollapsed((prev) => {
+      const next = new Set(prev);
+      next.has(category) ? next.delete(category) : next.add(category);
+      return next;
+    });
+  }
 
   const grouped = PRODUCT_CATEGORY_ORDER.map((category) => ({
     category,
@@ -40,21 +50,38 @@ export default function ProductList({ products }: ProductListProps) {
         </div>
       ) : (
         <div>
-          {grouped.map(({ category, label, emoji, products: groupProducts }) => (
-            <section key={category}>
-              <h2 className="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-gray-500 bg-gray-50 border-b border-gray-100 flex items-center gap-1.5">
-                <span>{emoji}</span>
-                <span>{label}</span>
-              </h2>
-              {groupProducts.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  onEdit={(p) => setFormProduct(p)}
-                />
-              ))}
-            </section>
-          ))}
+          {grouped.map(({ category, label, emoji, products: groupProducts }) => {
+            const isCollapsed = collapsed.has(category);
+            return (
+              <section key={category}>
+                <button
+                  onClick={() => toggleSection(category)}
+                  className="w-full px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-gray-500 bg-gray-50 border-b border-gray-100 flex items-center gap-1.5 active:bg-gray-100"
+                >
+                  <ChevronDown
+                    size={14}
+                    className={cn(
+                      "transition-transform duration-200 shrink-0",
+                      isCollapsed && "-rotate-90"
+                    )}
+                  />
+                  <span>{emoji}</span>
+                  <span className="flex-1 text-left">{label}</span>
+                  <span className="text-gray-400 normal-case font-normal tracking-normal">
+                    {groupProducts.length}
+                  </span>
+                </button>
+                {!isCollapsed &&
+                  groupProducts.map((product) => (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      onEdit={(p) => setFormProduct(p)}
+                    />
+                  ))}
+              </section>
+            );
+          })}
         </div>
       )}
 
