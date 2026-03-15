@@ -1,0 +1,9 @@
+.env
+backups/
+*.dump
+*.log
+.venv/
+__pycache__/
+node_modules/
+.next/
+dist/

@@ -1,0 +1,24 @@
+---
+description: Entorno de desarrollo — usar siempre el compose de dev
+globs:
+alwaysApply: true
+---
+
+# Entorno de desarrollo
+
+Este repo (`plancome-dev`) es la instancia de desarrollo.
+
+- Usar siempre `docker compose -f docker-compose.dev.yml` (nunca el .yml raíz ni prod)
+- Usar `docker compose`, no `docker-compose` (deprecado)
+- Todos los comandos que requieren librerías se ejecutan dentro del contenedor:
+
+```bash
+docker compose -f docker-compose.dev.yml exec <servicio> <comando>
+```
+
+Ejemplos:
+- `docker compose -f docker-compose.dev.yml up -d`
+- `docker compose -f docker-compose.dev.yml exec backend pytest`
+- `docker compose -f docker-compose.dev.yml logs -f`
+
+O usar los targets del Makefile: `make up-dev`, `make logs-dev`, `make shell-backend`
