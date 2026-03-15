@@ -1,6 +1,6 @@
 "use client";
 
-import { useOptimistic, useTransition, useState } from "react";
+import { useOptimistic, useTransition, useState, useRef } from "react";
 import { Pencil, Trash2 } from "lucide-react";
 import { updateUnits, deleteProduct } from "@/actions/products";
 import type { Product } from "@prisma/client";
@@ -17,18 +17,25 @@ export default function ProductCard({ product, onEdit }: ProductCardProps) {
     product.units,
     (current: number, delta: number) => Math.max(0, current + delta)
   );
-  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState(false);
+  const resetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function handleDeleteTap() {
+    if (pendingDelete) {
+      if (resetTimer.current) clearTimeout(resetTimer.current);
+      startTransition(async () => {
+        await deleteProduct(product.id);
+      });
+    } else {
+      setPendingDelete(true);
+      resetTimer.current = setTimeout(() => setPendingDelete(false), 2000);
+    }
+  }
 
   function handleUnit(delta: number) {
     startTransition(async () => {
       addOptimistic(delta);
       await updateUnits(product.id, delta);
-    });
-  }
-
-  function handleDelete() {
-    startTransition(async () => {
-      await deleteProduct(product.id);
     });
   }
 
@@ -86,30 +93,16 @@ export default function ProductCard({ product, onEdit }: ProductCardProps) {
           <Pencil size={17} />
         </button>
 
-        {confirmDelete ? (
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleDelete}
-              className="text-xs font-semibold text-red-600 px-2 py-1"
-            >
-              Eliminar
-            </button>
-            <button
-              onClick={() => setConfirmDelete(false)}
-              className="text-xs text-gray-400 px-1 py-1"
-            >
-              No
-            </button>
-          </div>
-        ) : (
-          <button
-            onClick={() => setConfirmDelete(true)}
-            className="w-10 h-10 flex items-center justify-center text-gray-400 active:text-red-500"
-            aria-label="Eliminar"
-          >
-            <Trash2 size={17} />
-          </button>
-        )}
+        <button
+          onClick={handleDeleteTap}
+          className={cn(
+            "w-10 h-10 flex items-center justify-center transition-colors",
+            pendingDelete ? "text-red-500" : "text-gray-400 active:text-red-500"
+          )}
+          aria-label={pendingDelete ? "Confirmar eliminación" : "Eliminar"}
+        >
+          <Trash2 size={17} strokeWidth={pendingDelete ? 2.5 : 1.8} />
+        </button>
       </div>
     </div>
   );
