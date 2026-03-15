@@ -1,0 +1,123 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum DishCategory {
+  PASTA
+  ARROZ
+  CARNE
+  PESCADO
+  LEGUMBRES
+  HUEVOS
+  OTRO
+}
+
+enum ProductCategory {
+  CARNES_PROTEINAS
+  LACTEOS
+  FRUTAS_VERDURAS
+  DESPENSA
+  BEBIDAS
+  HIGIENE_LIMPIEZA
+  OTROS
+}
+
+enum DayOfWeek {
+  LUNES
+  MARTES
+  MIERCOLES
+  JUEVES
+  VIERNES
+  SABADO
+  DOMINGO
+}
+
+enum MealType {
+  COMIDA
+  CENA
+}
+
+// ─── Inventario / Lista maestra ───────────────────────────────────────────────
+
+// Un Product representa tanto una entrada del inventario (con unidades)
+// como un artículo de la lista maestra de compra.
+model Product {
+  id        Int             @id @default(autoincrement())
+  name      String
+  category  ProductCategory
+  units     Int             @default(0)
+  createdAt DateTime        @default(now())
+
+  dishes               Dish[]
+  shoppingSessionItems ShoppingSessionItem[]
+}
+
+// ─── Catálogo de platos ───────────────────────────────────────────────────────
+
+model Dish {
+  id            Int          @id @default(autoincrement())
+  name          String
+  category      DishCategory
+  mainProductId Int?
+  mainProduct   Product?     @relation(fields: [mainProductId], references: [id], onDelete: SetNull)
+  active        Boolean      @default(true)
+  createdAt     DateTime     @default(now())
+
+  planSlots PlanSlot[]
+}
+
+// ─── Plan semanal ─────────────────────────────────────────────────────────────
+
+// Un WeekPlan por semana; weekStart = lunes de esa semana (sin hora).
+model WeekPlan {
+  id        Int      @id @default(autoincrement())
+  weekStart DateTime @unique
+  createdAt DateTime @default(now())
+
+  slots PlanSlot[]
+}
+
+// Cada slot es único por semana + día + tipo de comida.
+model PlanSlot {
+  id         Int       @id @default(autoincrement())
+  weekPlanId Int
+  weekPlan   WeekPlan  @relation(fields: [weekPlanId], references: [id], onDelete: Cascade)
+  day        DayOfWeek
+  meal       MealType
+  dishId     Int?
+  dish       Dish?     @relation(fields: [dishId], references: [id], onDelete: SetNull)
+  eatenOut   Boolean   @default(false)
+
+  @@unique([weekPlanId, day, meal])
+}
+
+// ─── Compra ───────────────────────────────────────────────────────────────────
+
+// Una sesión de compra: se crea al "preparar compra", se completa al volver del super.
+model ShoppingSession {
+  id          Int       @id @default(autoincrement())
+  createdAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  items ShoppingSessionItem[]
+}
+
+// Cada ítem de la sesión: qué producto, cuántas unidades comprar, y si ya está cogido.
+model ShoppingSessionItem {
+  id            Int             @id @default(autoincrement())
+  sessionId     Int
+  session       ShoppingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  productId     Int
+  product       Product         @relation(fields: [productId], references: [id])
+  quantityToBuy Int             @default(1)
+  checked       Boolean         @default(false)
+
+  @@unique([sessionId, productId])
+}
