@@ -3,7 +3,7 @@
 import { useTransition, useRef, useEffect } from "react";
 import { X } from "lucide-react";
 import { createProduct, updateProduct } from "@/actions/products";
-import { PRODUCT_CATEGORY_LABELS, PRODUCT_CATEGORY_ORDER } from "@/lib/constants";
+import { PRODUCT_CATEGORY_LABELS, PRODUCT_CATEGORY_EMOJIS, PRODUCT_CATEGORY_ORDER } from "@/lib/constants";
 import type { Product } from "@prisma/client";
 import { cn } from "@/lib/utils";
 
@@ -42,8 +42,8 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
       />
 
       {/* Sheet desde abajo */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl z-50 pb-safe">
-        <div className="flex items-center justify-between px-4 pt-4 pb-2">
+      <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl z-50 max-h-[90vh] flex flex-col">
+        <div className="flex items-center justify-between px-4 pt-4 pb-2 shrink-0">
           <h2 className="text-lg font-semibold text-gray-900">
             {product ? "Editar producto" : "Nuevo producto"}
           </h2>
@@ -55,7 +55,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="px-4 pb-6 flex flex-col gap-4">
+        <form onSubmit={handleSubmit} className="px-4 pb-8 flex flex-col gap-4 overflow-y-auto">
           {/* Nombre */}
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-gray-700">Nombre</label>
@@ -84,7 +84,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
               </option>
               {PRODUCT_CATEGORY_ORDER.map((cat) => (
                 <option key={cat} value={cat}>
-                  {PRODUCT_CATEGORY_LABELS[cat]}
+                  {PRODUCT_CATEGORY_EMOJIS[cat]} {PRODUCT_CATEGORY_LABELS[cat]}
                 </option>
               ))}
             </select>

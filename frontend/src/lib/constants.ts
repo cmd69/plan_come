@@ -10,6 +10,16 @@ export const PRODUCT_CATEGORY_LABELS: Record<ProductCategory, string> = {
   OTROS: "Otros",
 };
 
+export const PRODUCT_CATEGORY_EMOJIS: Record<ProductCategory, string> = {
+  CARNES_PROTEINAS: "🥩",
+  LACTEOS: "🥛",
+  FRUTAS_VERDURAS: "🥦",
+  DESPENSA: "🫙",
+  BEBIDAS: "🥤",
+  HIGIENE_LIMPIEZA: "🧹",
+  OTROS: "📦",
+};
+
 export const PRODUCT_CATEGORY_ORDER: ProductCategory[] = [
   "CARNES_PROTEINAS",
   "LACTEOS",
@@ -28,6 +38,16 @@ export const DISH_CATEGORY_LABELS: Record<DishCategory, string> = {
   LEGUMBRES: "Legumbres",
   HUEVOS: "Huevos",
   OTRO: "Otro",
+};
+
+export const DISH_CATEGORY_EMOJIS: Record<DishCategory, string> = {
+  CARNE: "🥩",
+  PESCADO: "🐟",
+  PASTA: "🍝",
+  ARROZ: "🍚",
+  LEGUMBRES: "🫘",
+  HUEVOS: "🥚",
+  OTRO: "🍽️",
 };
 
 export const DISH_CATEGORY_ORDER: DishCategory[] = [

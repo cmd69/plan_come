@@ -11,8 +11,8 @@
 - [x] docker-compose.dev.yml / docker-compose.prod.yml
 - [x] Dockerfiles (dev hot-reload + prod standalone)
 - [x] Esquema de BD (schema.prisma)
-- [ ] Layout raíz con navegación (bottom tab bar)
-- [ ] Primera migración de Prisma
+- [x] Layout raíz con navegación (bottom tab bar)
+- [x] Primera migración de Prisma
 
 ---
 
@@ -173,14 +173,23 @@ Panel que aparece antes de generar el plan. Estado de sesión, sin persistir en 
 
 ---
 
+## Vista pendiente — Configuración (futura)
+
+> **Nota:** las categorías de productos y platos son actualmente fijas en código (`src/lib/constants.ts`).
+> En una iteración futura se añadirá una vista `/configuracion` que permita gestionar las categorías
+> desde la UI, persistiéndolas en BD. Pendiente de definir alcance antes de implementar.
+
+---
+
 ## Estado global
 
 | Vista | Estado |
 |---|---|
-| Infraestructura base | En progreso |
-| Inventario | Pendiente |
+| Infraestructura base | ✅ Completo |
+| Inventario | En validación |
 | Catálogo de platos | Pendiente |
 | Lista maestra + Preparar compra | Pendiente |
 | Modo compra | Pendiente |
 | Plan semanal | Pendiente |
 | Restricciones | Pendiente |
+| Configuración (categorías) | Futura — pendiente de alcance |

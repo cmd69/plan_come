@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import type { Product } from "@prisma/client";
-import { PRODUCT_CATEGORY_LABELS, PRODUCT_CATEGORY_ORDER } from "@/lib/constants";
+import { PRODUCT_CATEGORY_LABELS, PRODUCT_CATEGORY_EMOJIS, PRODUCT_CATEGORY_ORDER } from "@/lib/constants";
 import ProductCard from "./ProductCard";
 import ProductForm from "./ProductForm";
 
@@ -19,6 +19,7 @@ export default function ProductList({ products }: ProductListProps) {
   const grouped = PRODUCT_CATEGORY_ORDER.map((category) => ({
     category,
     label: PRODUCT_CATEGORY_LABELS[category],
+    emoji: PRODUCT_CATEGORY_EMOJIS[category],
     products: products.filter((p) => p.category === category),
   })).filter((g) => g.products.length > 0);
 
@@ -39,10 +40,11 @@ export default function ProductList({ products }: ProductListProps) {
         </div>
       ) : (
         <div>
-          {grouped.map(({ category, label, products: groupProducts }) => (
+          {grouped.map(({ category, label, emoji, products: groupProducts }) => (
             <section key={category}>
-              <h2 className="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-gray-500 bg-gray-50 border-b border-gray-100">
-                {label}
+              <h2 className="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-gray-500 bg-gray-50 border-b border-gray-100 flex items-center gap-1.5">
+                <span>{emoji}</span>
+                <span>{label}</span>
               </h2>
               {groupProducts.map((product) => (
                 <ProductCard
