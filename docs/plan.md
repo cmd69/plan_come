@@ -24,23 +24,23 @@ CRUD de productos con gestión de unidades. Base de todo el sistema.
 - `Product` (name, category, units)
 
 ### Componentes
-- [ ] `ProductList` — lista agrupada por categoría
-- [ ] `ProductCard` — nombre + botones +/− + editar
-- [ ] `ProductForm` — modal/sheet para añadir y editar
+- [x] `ProductList` — lista agrupada por categoría, secciones colapsables
+- [x] `ProductCard` — icono + nombre + botones +/− + editar + borrado doble tap
+- [x] `ProductForm` — sheet desde abajo, campos icono + nombre + categoría
 
 ### Server Actions
-- [ ] `createProduct`
-- [ ] `updateUnits` (incremento / decremento)
-- [ ] `updateProduct`
-- [ ] `deleteProduct`
+- [x] `createProduct`
+- [x] `updateUnits` (incremento / decremento, optimistic update)
+- [x] `updateProduct`
+- [x] `deleteProduct`
 
 ### Criterios de aceptación
-- [ ] Se puede añadir un producto con nombre y categoría
-- [ ] Los botones +/− cambian las unidades sin recargar la página
-- [ ] Se puede editar nombre y categoría de un producto existente
-- [ ] Se puede eliminar un producto (con confirmación)
-- [ ] Los productos se muestran agrupados por categoría
-- [ ] Los botones +/− son suficientemente grandes para uso con una mano (≥ 44px)
+- [x] Se puede añadir un producto con nombre y categoría
+- [x] Los botones +/− cambian las unidades sin recargar la página
+- [x] Se puede editar nombre y categoría de un producto existente
+- [x] Se puede eliminar un producto (con confirmación)
+- [x] Los productos se muestran agrupados por categoría
+- [x] Los botones +/− son suficientemente grandes para uso con una mano (≥ 44px)
 
 ---
 
@@ -186,8 +186,8 @@ Panel que aparece antes de generar el plan. Estado de sesión, sin persistir en 
 | Vista | Estado |
 |---|---|
 | Infraestructura base | ✅ Completo |
-| Inventario | En validación |
-| Catálogo de platos | Pendiente |
+| Inventario | ✅ Completo |
+| Catálogo de platos | En progreso |
 | Lista maestra + Preparar compra | Pendiente |
 | Modo compra | Pendiente |
 | Plan semanal | Pendiente |
