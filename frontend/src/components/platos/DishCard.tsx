@@ -1,14 +1,21 @@
 "use client";
 
 import { useState, useRef, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Pencil, Trash2, ChevronDown } from "lucide-react";
 import { toggleDishActive, deleteDish } from "@/actions/dishes";
 import { DISH_CATEGORY_LABELS, DISH_CATEGORY_EMOJIS } from "@/lib/constants";
-import type { Dish, DishIngredient, Product } from "@prisma/client";
+import type { Dish, DishIngredient, DishSide, Product } from "@prisma/client";
 import { cn } from "@/lib/utils";
 
 type DishIngredientWithProduct = DishIngredient & { product: Product };
-export type DishFull = Dish & { ingredients: DishIngredientWithProduct[] };
+type DishSideWithDish = DishSide & {
+  side: Dish & { ingredients: DishIngredientWithProduct[] };
+};
+export type DishFull = Dish & {
+  ingredients: DishIngredientWithProduct[];
+  sides: DishSideWithDish[];
+};
 
 interface DishCardProps {
   dish: DishFull;
@@ -16,6 +23,7 @@ interface DishCardProps {
 }
 
 export default function DishCard({ dish, onEdit }: DishCardProps) {
+  const router = useRouter();
   const [, startTransition] = useTransition();
   const [pendingDelete, setPendingDelete] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -23,8 +31,69 @@ export default function DishCard({ dish, onEdit }: DishCardProps) {
 
   const required = dish.ingredients.filter((i) => !i.optional);
   const optional = dish.ingredients.filter((i) => i.optional);
-  const hasStock = required.every((i) => i.product.units >= i.quantity);
   const hasIngredients = dish.ingredients.length > 0;
+  const hasSides = dish.sides.length > 0;
+  const hasExpandable = hasIngredients || hasSides;
+
+  // Availability: standalone required must all have stock,
+  // for each group at least 1 member must have stock
+  const standalone = required.filter((i) => !i.group);
+  const groups = new Map<string, DishIngredientWithProduct[]>();
+  for (const ing of required) {
+    if (ing.group) {
+      const list = groups.get(ing.group) ?? [];
+      list.push(ing);
+      groups.set(ing.group, list);
+    }
+  }
+  const standaloneOk = standalone.every((i) => i.product.units >= i.quantity);
+  const groupsOk = [...groups.values()].every((members) =>
+    members.some((i) => i.product.units >= i.quantity)
+  );
+
+  // Side availability: for each side group, at least 1 side must be available
+  const sideGroups = new Map<string, DishSideWithDish[]>();
+  const standaloneSides: DishSideWithDish[] = [];
+  for (const s of dish.sides) {
+    if (s.group) {
+      const list = sideGroups.get(s.group) ?? [];
+      list.push(s);
+      sideGroups.set(s.group, list);
+    } else {
+      standaloneSides.push(s);
+    }
+  }
+
+  function isSideAvailable(side: DishSideWithDish["side"]): boolean {
+    const req = side.ingredients.filter((i) => !i.optional);
+    if (req.length === 0) return true;
+    const sa = req.filter((i) => !i.group);
+    const gr = new Map<string, typeof req>();
+    for (const ing of req) {
+      if (ing.group) {
+        const l = gr.get(ing.group) ?? [];
+        l.push(ing);
+        gr.set(ing.group, l);
+      }
+    }
+    return (
+      sa.every((i) => i.product.units >= i.quantity) &&
+      [...gr.values()].every((m) => m.some((i) => i.product.units >= i.quantity))
+    );
+  }
+
+  const standaloneSidesOk = standaloneSides.every((s) => isSideAvailable(s.side));
+  const sideGroupsOk = [...sideGroups.values()].every((members) =>
+    members.some((s) => isSideAvailable(s.side))
+  );
+  const hasStock = standaloneOk && groupsOk && standaloneSidesOk && sideGroupsOk;
+
+  const GROUP_COLORS: Record<string, string> = {
+    A: "bg-blue-50 text-blue-700",
+    B: "bg-violet-50 text-violet-700",
+    C: "bg-teal-50 text-teal-700",
+    D: "bg-cyan-50 text-cyan-700",
+  };
 
   function handleDeleteTap() {
     if (pendingDelete) {
@@ -54,7 +123,15 @@ export default function DishCard({ dish, onEdit }: DishCardProps) {
           </p>
           <div className="flex items-center gap-1.5 flex-wrap">
             <span className="text-xs text-gray-400">{DISH_CATEGORY_LABELS[dish.category]}</span>
-            {hasIngredients && (
+            {dish.isSide && (
+              <>
+                <span className="text-gray-300 text-xs">·</span>
+                <span className="text-[10px] font-semibold text-orange-600 bg-orange-100 px-1.5 py-0.5 rounded-full">
+                  ACOMP
+                </span>
+              </>
+            )}
+            {hasExpandable && (
               <>
                 <span className="text-gray-300 text-xs">·</span>
                 <span className={cn("text-xs font-medium", hasStock ? "text-emerald-600" : "text-red-400")}>
@@ -73,7 +150,7 @@ export default function DishCard({ dish, onEdit }: DishCardProps) {
 
         {/* Acciones */}
         <div className="flex items-center gap-1 shrink-0">
-          {hasIngredients && (
+          {hasExpandable && (
             <button
               onClick={() => setExpanded((v) => !v)}
               className="w-8 h-8 flex items-center justify-center text-gray-400"
@@ -106,38 +183,117 @@ export default function DishCard({ dish, onEdit }: DishCardProps) {
       </div>
 
       {/* Detalle ingredientes (expandible) */}
-      {expanded && hasIngredients && (
-        <div className="px-4 pb-3 flex flex-col gap-1">
-          {required.length > 0 && (
+      {expanded && hasExpandable && (
+        <div className="px-4 pb-3 flex flex-col gap-1.5">
+          {/* Standalone required */}
+          {standalone.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
-              {required.map((ing) => (
-                <span
-                  key={ing.id}
-                  className={cn(
-                    "text-xs px-2 py-0.5 rounded-full font-medium",
-                    ing.product.units >= ing.quantity
-                      ? "bg-emerald-50 text-emerald-700"
-                      : "bg-red-50 text-red-600"
-                  )}
-                >
-                  {ing.product.icon && `${ing.product.icon} `}
-                  {ing.product.name} ×{ing.quantity}
-                  {ing.product.units < ing.quantity && " ⚠"}
-                </span>
-              ))}
+              {standalone.map((ing) => {
+                const ok = ing.product.units >= ing.quantity;
+                return (
+                  <button
+                    key={ing.id}
+                    onClick={() => router.push(`/inventario?cat=${ing.product.category}`)}
+                    className={cn(
+                      "text-xs px-2 py-0.5 rounded-full font-medium",
+                      ok ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-600"
+                    )}
+                  >
+                    {ing.product.icon && `${ing.product.icon} `}
+                    {ing.product.name}{" "}
+                    <span className="opacity-70">×{ing.quantity}/{ing.product.units}</span>
+                  </button>
+                );
+              })}
             </div>
           )}
+          {/* Grouped alternatives */}
+          {[...groups.entries()].map(([groupName, members]) => (
+            <div key={groupName} className="flex flex-wrap items-center gap-1.5">
+              <span className={cn("text-[10px] font-bold px-1.5 py-0.5 rounded-full", GROUP_COLORS[groupName] ?? "bg-gray-100 text-gray-600")}>
+                1/{members.length}
+              </span>
+              {members.map((ing) => {
+                const ok = ing.product.units >= ing.quantity;
+                const colors = GROUP_COLORS[groupName] ?? "bg-gray-50 text-gray-600";
+                return (
+                  <button
+                    key={ing.id}
+                    onClick={() => router.push(`/inventario?cat=${ing.product.category}`)}
+                    className={cn(
+                      "text-xs px-2 py-0.5 rounded-full font-medium",
+                      ok ? colors : "bg-red-50 text-red-600"
+                    )}
+                  >
+                    {ing.product.icon && `${ing.product.icon} `}
+                    {ing.product.name}{" "}
+                    <span className="opacity-70">×{ing.quantity}/{ing.product.units}</span>
+                  </button>
+                );
+              })}
+            </div>
+          ))}
+          {/* Optional */}
           {optional.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
               {optional.map((ing) => (
-                <span
+                <button
                   key={ing.id}
+                  onClick={() => router.push(`/inventario?cat=${ing.product.category}`)}
                   className="text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 font-medium"
                 >
                   {ing.product.icon && `${ing.product.icon} `}
-                  {ing.product.name} ×{ing.quantity}
-                  <span className="opacity-60"> opc</span>
-                </span>
+                  {ing.product.name}{" "}
+                  <span className="opacity-70">×{ing.quantity}/{ing.product.units}</span>
+                </button>
+              ))}
+            </div>
+          )}
+          {/* Sides */}
+          {hasSides && (
+            <div className="flex flex-col gap-1 mt-1 pt-1 border-t border-gray-100">
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Acompañantes</span>
+              {/* Standalone sides */}
+              {standaloneSides.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {standaloneSides.map((s) => {
+                    const ok = isSideAvailable(s.side);
+                    return (
+                      <span
+                        key={s.id}
+                        className={cn(
+                          "text-xs px-2 py-0.5 rounded-full font-medium",
+                          ok ? "bg-orange-50 text-orange-700" : "bg-red-50 text-red-600"
+                        )}
+                      >
+                        {DISH_CATEGORY_EMOJIS[s.side.category]} {s.side.name}
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
+              {/* Grouped sides */}
+              {[...sideGroups.entries()].map(([groupName, members]) => (
+                <div key={groupName} className="flex flex-wrap items-center gap-1.5">
+                  <span className={cn("text-[10px] font-bold px-1.5 py-0.5 rounded-full", GROUP_COLORS[groupName] ?? "bg-gray-100 text-gray-600")}>
+                    1/{members.length}
+                  </span>
+                  {members.map((s) => {
+                    const ok = isSideAvailable(s.side);
+                    const colors = GROUP_COLORS[groupName] ?? "bg-gray-50 text-gray-600";
+                    return (
+                      <span
+                        key={s.id}
+                        className={cn(
+                          "text-xs px-2 py-0.5 rounded-full font-medium",
+                          ok ? colors : "bg-red-50 text-red-600"
+                        )}
+                      >
+                        {DISH_CATEGORY_EMOJIS[s.side.category]} {s.side.name}
+                      </span>
+                    );
+                  })}
+                </div>
               ))}
             </div>
           )}

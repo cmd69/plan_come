@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Plus, ChevronDown } from "lucide-react";
-import type { Product } from "@prisma/client";
+import type { Product, Category } from "@prisma/client";
 import { DISH_CATEGORY_LABELS, DISH_CATEGORY_EMOJIS, DISH_CATEGORY_ORDER } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import DishCard, { type DishFull } from "./DishCard";
@@ -11,9 +11,10 @@ import DishForm from "./DishForm";
 interface DishListProps {
   dishes: DishFull[];
   products: Product[];
+  categories: Category[];
 }
 
-export default function DishList({ dishes, products }: DishListProps) {
+export default function DishList({ dishes, products, categories }: DishListProps) {
   const [formDish, setFormDish] = useState<DishFull | null | undefined>(undefined);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
 
@@ -25,11 +26,14 @@ export default function DishList({ dishes, products }: DishListProps) {
     });
   }
 
+  const mainDishes = dishes.filter((d) => !d.isSide);
+  const sideDishes = dishes.filter((d) => d.isSide);
+
   const grouped = DISH_CATEGORY_ORDER.map((category) => ({
     category,
     label: DISH_CATEGORY_LABELS[category],
     emoji: DISH_CATEGORY_EMOJIS[category],
-    dishes: dishes.filter((d) => d.category === category),
+    dishes: mainDishes.filter((d) => d.category === category),
   })).filter((g) => g.dishes.length > 0);
 
   const isEmpty = dishes.length === 0;
@@ -68,6 +72,23 @@ export default function DishList({ dishes, products }: DishListProps) {
               </section>
             );
           })}
+          {/* Acompañantes */}
+          {sideDishes.length > 0 && (
+            <section>
+              <button
+                onClick={() => toggleSection("__sides__")}
+                className="w-full px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-orange-600 bg-orange-50 border-b border-orange-100 flex items-center gap-1.5 active:bg-orange-100"
+              >
+                <ChevronDown size={14} className={cn("transition-transform duration-200 shrink-0", collapsed.has("__sides__") && "-rotate-90")} />
+                <span>🍽️</span>
+                <span className="flex-1 text-left">Acompañantes</span>
+                <span className="text-orange-400 normal-case font-normal tracking-normal">{sideDishes.length}</span>
+              </button>
+              {!collapsed.has("__sides__") && sideDishes.map((dish) => (
+                <DishCard key={dish.id} dish={dish} onEdit={(d) => setFormDish(d)} />
+              ))}
+            </section>
+          )}
         </div>
       )}
 
@@ -82,7 +103,7 @@ export default function DishList({ dishes, products }: DishListProps) {
       )}
 
       {formDish !== undefined && (
-        <DishForm dish={formDish} products={products} onClose={() => setFormDish(undefined)} />
+        <DishForm dish={formDish} allDishes={dishes} products={products} categories={categories} onClose={() => setFormDish(undefined)} />
       )}
     </>
   );

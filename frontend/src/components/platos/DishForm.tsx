@@ -1,59 +1,105 @@
 "use client";
 
 import { useTransition, useRef, useEffect, useState } from "react";
-import { X, Plus, Trash2 } from "lucide-react";
-import { createDish, updateDish, type IngredientInput } from "@/actions/dishes";
+import { X, Plus, Minus } from "lucide-react";
+import { createDish, updateDish, type IngredientInput, type SideInput } from "@/actions/dishes";
 import {
   DISH_CATEGORY_LABELS,
   DISH_CATEGORY_EMOJIS,
   DISH_CATEGORY_ORDER,
 } from "@/lib/constants";
-import type { Dish, DishIngredient, Product } from "@prisma/client";
+import type { Product, Category } from "@prisma/client";
 import { cn } from "@/lib/utils";
-
-type DishIngredientWithProduct = DishIngredient & { product: Product };
-type DishFull = Dish & { ingredients: DishIngredientWithProduct[] };
+import IngredientPicker from "./IngredientPicker";
+import type { DishFull } from "./DishCard";
 
 interface DishFormProps {
   dish?: DishFull | null;
+  allDishes: DishFull[];
   products: Product[];
+  categories: Category[];
   onClose: () => void;
 }
 
-export default function DishForm({ dish, products, onClose }: DishFormProps) {
+export default function DishForm({ dish, allDishes, products, categories, onClose }: DishFormProps) {
   const [isPending, startTransition] = useTransition();
   const firstInputRef = useRef<HTMLInputElement>(null);
+  const [showPicker, setShowPicker] = useState(false);
+  const [isSide, setIsSide] = useState(dish?.isSide ?? false);
 
   const [ingredients, setIngredients] = useState<IngredientInput[]>(
     dish?.ingredients.map((i) => ({
       productId: i.productId,
       quantity: i.quantity,
       optional: i.optional,
+      group: i.group,
     })) ?? []
+  );
+
+  const [sides, setSides] = useState<SideInput[]>(
+    dish?.sides.map((s) => ({ sideId: s.sideId, group: s.group })) ?? []
+  );
+
+  // Available side dishes (excluding self)
+  const availableSides = allDishes.filter(
+    (d) => d.isSide && d.id !== dish?.id
   );
 
   useEffect(() => {
     firstInputRef.current?.focus();
   }, []);
 
-  function addIngredient() {
-    const firstUnused = products.find(
-      (p) => !ingredients.some((i) => i.productId === p.id)
-    );
-    if (!firstUnused) return;
-    setIngredients((prev) => [
-      ...prev,
-      { productId: firstUnused.id, quantity: 1, optional: false },
-    ]);
-  }
-
-  function removeIngredient(index: number) {
-    setIngredients((prev) => prev.filter((_, i) => i !== index));
-  }
-
-  function updateIngredient(index: number, patch: Partial<IngredientInput>) {
+  function updateQuantity(productId: number, delta: number) {
     setIngredients((prev) =>
-      prev.map((ing, i) => (i === index ? { ...ing, ...patch } : ing))
+      prev.map((i) =>
+        i.productId === productId
+          ? { ...i, quantity: Math.max(1, i.quantity + delta) }
+          : i
+      )
+    );
+  }
+
+  function removeIngredient(productId: number) {
+    setIngredients((prev) => prev.filter((i) => i.productId !== productId));
+  }
+
+  const GROUP_LABELS = ["A", "B", "C", "D"];
+  const GROUP_COLORS: Record<string, { bg: string; text: string; border: string }> = {
+    A: { bg: "bg-blue-100", text: "text-blue-700", border: "border-blue-200" },
+    B: { bg: "bg-violet-100", text: "text-violet-700", border: "border-violet-200" },
+    C: { bg: "bg-teal-100", text: "text-teal-700", border: "border-teal-200" },
+    D: { bg: "bg-cyan-100", text: "text-cyan-700", border: "border-cyan-200" },
+  };
+
+  function cycleGroup(productId: number) {
+    setIngredients((prev) =>
+      prev.map((i) => {
+        if (i.productId !== productId) return i;
+        const currentIdx = i.group ? GROUP_LABELS.indexOf(i.group) : -1;
+        const nextIdx = currentIdx + 1;
+        const nextGroup = nextIdx < GROUP_LABELS.length ? GROUP_LABELS[nextIdx] : null;
+        return { ...i, group: nextGroup, optional: false };
+      })
+    );
+  }
+
+  function toggleSide(sideId: number) {
+    setSides((prev) => {
+      const exists = prev.find((s) => s.sideId === sideId);
+      if (exists) return prev.filter((s) => s.sideId !== sideId);
+      return [...prev, { sideId, group: null }];
+    });
+  }
+
+  function cycleSideGroup(sideId: number) {
+    setSides((prev) =>
+      prev.map((s) => {
+        if (s.sideId !== sideId) return s;
+        const currentIdx = s.group ? GROUP_LABELS.indexOf(s.group) : -1;
+        const nextIdx = currentIdx + 1;
+        const nextGroup = nextIdx < GROUP_LABELS.length ? GROUP_LABELS[nextIdx] : null;
+        return { ...s, group: nextGroup };
+      })
     );
   }
 
@@ -65,7 +111,9 @@ export default function DishForm({ dish, products, onClose }: DishFormProps) {
         name: fd.get("name") as string,
         category: fd.get("category") as Parameters<typeof createDish>[0]["category"],
         notes: (fd.get("notes") as string) || null,
+        isSide,
         ingredients,
+        sides: isSide ? [] : sides,
       };
       if (dish) {
         await updateDish(dish.id, data);
@@ -75,10 +123,6 @@ export default function DishForm({ dish, products, onClose }: DishFormProps) {
       onClose();
     });
   }
-
-  const availableProducts = products.filter(
-    (p, _, arr) => arr.length > 0
-  );
 
   return (
     <>
@@ -131,125 +175,189 @@ export default function DishForm({ dish, products, onClose }: DishFormProps) {
             </select>
           </div>
 
+          {/* Acompañante toggle */}
+          <button
+            type="button"
+            onClick={() => setIsSide((v) => !v)}
+            className={cn(
+              "flex items-center gap-3 px-3 py-3 rounded-xl border transition-colors",
+              isSide ? "border-orange-300 bg-orange-50" : "border-gray-200 bg-gray-50"
+            )}
+          >
+            <span className="text-lg">🍽️</span>
+            <span className="flex-1 text-sm font-medium text-gray-700 text-left">
+              Es un acompañante
+            </span>
+            <div className={cn(
+              "w-10 h-6 rounded-full relative transition-colors",
+              isSide ? "bg-orange-500" : "bg-gray-300"
+            )}>
+              <div className={cn(
+                "absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform",
+                isSide ? "translate-x-[18px]" : "translate-x-0.5"
+              )} />
+            </div>
+          </button>
+
+          {/* Acompañantes selector (solo para platos principales) */}
+          {!isSide && availableSides.length > 0 && (
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium text-gray-700">
+                Acompañantes
+              </label>
+              <div className="flex flex-col gap-1.5">
+                {availableSides.map((sideDish) => {
+                  const selected = sides.find((s) => s.sideId === sideDish.id);
+                  return (
+                    <div
+                      key={sideDish.id}
+                      className={cn(
+                        "flex items-center gap-2 px-3 py-2 rounded-xl border transition-colors",
+                        selected
+                          ? selected.group && GROUP_COLORS[selected.group]
+                            ? `${GROUP_COLORS[selected.group].border} ${GROUP_COLORS[selected.group].bg}/30`
+                            : "border-orange-200 bg-orange-50/50"
+                          : "border-gray-200 bg-gray-50"
+                      )}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => toggleSide(sideDish.id)}
+                        className="flex items-center gap-2 flex-1 min-w-0"
+                      >
+                        <span className="text-lg leading-none">
+                          {DISH_CATEGORY_EMOJIS[sideDish.category]}
+                        </span>
+                        <span className={cn(
+                          "text-sm font-medium truncate",
+                          selected ? "text-gray-800" : "text-gray-400"
+                        )}>
+                          {sideDish.name}
+                        </span>
+                      </button>
+                      {selected && (
+                        <button
+                          type="button"
+                          onClick={() => cycleSideGroup(sideDish.id)}
+                          className={cn(
+                            "shrink-0 h-6 px-1.5 rounded-full text-[10px] font-bold border transition-colors",
+                            selected.group && GROUP_COLORS[selected.group]
+                              ? `${GROUP_COLORS[selected.group].bg} ${GROUP_COLORS[selected.group].text} ${GROUP_COLORS[selected.group].border}`
+                              : "bg-gray-100 text-gray-400 border-gray-200"
+                          )}
+                        >
+                          {selected.group ? `GRP ${selected.group}` : "GRP"}
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Ingredientes */}
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-gray-700">Ingredientes</label>
+              <label className="text-sm font-medium text-gray-700">
+                Ingredientes
+              </label>
               <button
                 type="button"
-                onClick={addIngredient}
-                disabled={ingredients.length >= availableProducts.length}
-                className="flex items-center gap-1 text-xs font-semibold text-emerald-600 disabled:text-gray-300"
+                onClick={() => setShowPicker(true)}
+                className="flex items-center gap-1 text-xs font-semibold text-emerald-600 active:text-emerald-700"
               >
                 <Plus size={14} />
-                Añadir
+                {ingredients.length > 0 ? "Editar" : "Añadir"}
               </button>
             </div>
 
-            {ingredients.length === 0 && (
-              <p className="text-sm text-gray-400 text-center py-2">
-                Sin ingredientes — el plato estará siempre disponible
-              </p>
-            )}
-
-            {ingredients.map((ing, index) => {
-              const product = products.find((p) => p.id === ing.productId);
-              return (
-                <div
-                  key={index}
-                  className="rounded-xl border border-gray-200 bg-gray-50 p-3 flex flex-col gap-2"
-                >
-                  {/* Selector de producto */}
-                  <div className="flex items-center gap-2">
-                    <select
-                      value={ing.productId}
-                      onChange={(e) =>
-                        updateIngredient(index, { productId: Number(e.target.value) })
-                      }
-                      className="flex-1 h-10 px-2 rounded-lg border border-gray-200 bg-white text-sm outline-none focus:border-emerald-500 appearance-none"
-                    >
-                      {products.map((p) => (
-                        <option
-                          key={p.id}
-                          value={p.id}
-                          disabled={
-                            p.id !== ing.productId &&
-                            ingredients.some((i, idx) => idx !== index && i.productId === p.id)
-                          }
-                        >
-                          {p.icon ? `${p.icon} ` : ""}{p.name} · {p.units} ud.
-                        </option>
-                      ))}
-                    </select>
-                    <button
-                      type="button"
-                      onClick={() => removeIngredient(index)}
-                      className="w-9 h-9 flex items-center justify-center text-gray-400 active:text-red-500 shrink-0"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-
-                  {/* Cantidad + Opcional */}
-                  <div className="flex items-center gap-3">
-                    {/* Cantidad */}
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-gray-500">Cantidad</span>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          updateIngredient(index, {
-                            quantity: Math.max(1, ing.quantity - 1),
-                          })
-                        }
-                        className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 text-base font-semibold text-gray-700 disabled:opacity-30"
-                        disabled={ing.quantity <= 1}
-                      >
-                        −
-                      </button>
-                      <span className="w-6 text-center text-sm font-bold tabular-nums">
-                        {ing.quantity}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          updateIngredient(index, { quantity: ing.quantity + 1 })
-                        }
-                        className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 text-base font-semibold text-gray-700"
-                      >
-                        +
-                      </button>
-                    </div>
-
-                    {/* Separador */}
-                    <div className="h-4 w-px bg-gray-200" />
-
-                    {/* Opcional */}
-                    <button
-                      type="button"
-                      onClick={() =>
-                        updateIngredient(index, { optional: !ing.optional })
-                      }
+            {ingredients.length === 0 ? (
+              <button
+                type="button"
+                onClick={() => setShowPicker(true)}
+                className="py-6 rounded-xl border-2 border-dashed border-gray-200 text-sm text-gray-400 active:bg-gray-50"
+              >
+                Toca para seleccionar ingredientes
+              </button>
+            ) : (
+              <div className="flex flex-col gap-1.5">
+                {ingredients.map((ing) => {
+                  const product = products.find((p) => p.id === ing.productId);
+                  if (!product) return null;
+                  return (
+                    <div
+                      key={ing.productId}
                       className={cn(
-                        "h-7 px-3 rounded-full text-xs font-semibold transition-colors",
+                        "flex items-center gap-2 px-3 py-2 rounded-xl border",
                         ing.optional
-                          ? "bg-amber-100 text-amber-700"
-                          : "bg-gray-100 text-gray-600"
+                          ? "border-amber-200 bg-amber-50/50"
+                          : ing.group && GROUP_COLORS[ing.group]
+                            ? `${GROUP_COLORS[ing.group].border} ${GROUP_COLORS[ing.group].bg}/30`
+                            : "border-gray-200 bg-gray-50"
                       )}
                     >
-                      {ing.optional ? "Opcional" : "Obligatorio"}
-                    </button>
-
-                    {/* Aviso sin stock */}
-                    {product && product.units < ing.quantity && (
-                      <span className="text-xs text-red-400 ml-auto">
-                        Sin stock
+                      <span className="text-lg leading-none">
+                        {product.icon || "📦"}
                       </span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+                      <span className="flex-1 text-sm font-medium text-gray-800 truncate">
+                        {product.name}
+                      </span>
+                      {ing.optional && (
+                        <span className="text-[10px] font-semibold text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded-full">
+                          OPC
+                        </span>
+                      )}
+                      {/* Group toggle — tap to cycle A→B→C→D→none */}
+                      {!ing.optional && (
+                        <button
+                          type="button"
+                          onClick={() => cycleGroup(product.id)}
+                          className={cn(
+                            "shrink-0 h-6 px-1.5 rounded-full text-[10px] font-bold border transition-colors",
+                            ing.group && GROUP_COLORS[ing.group]
+                              ? `${GROUP_COLORS[ing.group].bg} ${GROUP_COLORS[ing.group].text} ${GROUP_COLORS[ing.group].border}`
+                              : "bg-gray-100 text-gray-400 border-gray-200"
+                          )}
+                          title="Grupo de alternativas"
+                        >
+                          {ing.group ? `GRP ${ing.group}` : "GRP"}
+                        </button>
+                      )}
+                      {/* Quantity controls */}
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => updateQuantity(product.id, -1)}
+                          disabled={ing.quantity <= 1}
+                          className="w-6 h-6 flex items-center justify-center rounded-full border border-gray-300 text-gray-600 disabled:opacity-30"
+                        >
+                          <Minus size={12} />
+                        </button>
+                        <span className="w-5 text-center text-xs font-bold tabular-nums">
+                          {ing.quantity}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => updateQuantity(product.id, 1)}
+                          className="w-6 h-6 flex items-center justify-center rounded-full border border-gray-300 text-gray-600"
+                        >
+                          <Plus size={12} />
+                        </button>
+                      </div>
+                      {/* Remove */}
+                      <button
+                        type="button"
+                        onClick={() => removeIngredient(product.id)}
+                        className="w-6 h-6 flex items-center justify-center text-gray-300 active:text-red-500"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* Notas */}
@@ -289,6 +397,17 @@ export default function DishForm({ dish, products, onClose }: DishFormProps) {
           </div>
         </form>
       </div>
+
+      {/* Ingredient Picker modal */}
+      {showPicker && (
+        <IngredientPicker
+          products={products}
+          categories={categories}
+          selected={ingredients}
+          onChange={setIngredients}
+          onClose={() => setShowPicker(false)}
+        />
+      )}
     </>
   );
 }

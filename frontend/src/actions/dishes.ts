@@ -8,13 +8,21 @@ export type IngredientInput = {
   productId: number;
   quantity: number;
   optional: boolean;
+  group: string | null;
+};
+
+export type SideInput = {
+  sideId: number;
+  group: string | null;
 };
 
 export type DishInput = {
   name: string;
   category: DishCategory;
   notes: string | null;
+  isSide: boolean;
   ingredients: IngredientInput[];
+  sides: SideInput[];
 };
 
 export async function createDish(data: DishInput) {
@@ -25,7 +33,9 @@ export async function createDish(data: DishInput) {
       name: data.name.trim(),
       category: data.category,
       notes: data.notes?.trim() || null,
+      isSide: data.isSide,
       ingredients: { create: data.ingredients },
+      sides: data.sides.length > 0 ? { create: data.sides } : undefined,
     },
   });
   revalidatePath("/platos");
@@ -40,9 +50,14 @@ export async function updateDish(id: number, data: DishInput) {
       name: data.name.trim(),
       category: data.category,
       notes: data.notes?.trim() || null,
+      isSide: data.isSide,
       ingredients: {
         deleteMany: {},
         create: data.ingredients,
+      },
+      sides: {
+        deleteMany: {},
+        create: data.sides,
       },
     },
   });

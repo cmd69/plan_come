@@ -19,15 +19,7 @@ enum DishCategory {
   OTRO
 }
 
-enum ProductCategory {
-  CARNES_PROTEINAS
-  LACTEOS
-  FRUTAS_VERDURAS
-  DESPENSA
-  BEBIDAS
-  HIGIENE_LIMPIEZA
-  OTROS
-}
+// ProductCategory eliminado — ahora dinámico en tabla Category
 
 enum DayOfWeek {
   LUNES
@@ -44,17 +36,28 @@ enum MealType {
   CENA
 }
 
+// ─── Categorías de productos ──────────────────────────────────────────────────
+
+model Category {
+  id        Int      @id @default(autoincrement())
+  slug      String   @unique
+  label     String
+  emoji     String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
 // ─── Inventario / Lista maestra ───────────────────────────────────────────────
 
 // Un Product representa tanto una entrada del inventario (con unidades)
 // como un artículo de la lista maestra de compra.
 model Product {
-  id        Int             @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   name      String
   icon      String?
-  category  ProductCategory
-  units     Int             @default(0)
-  createdAt DateTime        @default(now())
+  category  String
+  units     Int      @default(0)
+  createdAt DateTime @default(now())
 
   dishIngredients      DishIngredient[]
   shoppingSessionItems ShoppingSessionItem[]
@@ -68,14 +71,33 @@ model Dish {
   category  DishCategory
   notes     String?
   active    Boolean      @default(true)
+  isSide    Boolean      @default(false)
   createdAt DateTime     @default(now())
 
   planSlots   PlanSlot[]
   ingredients DishIngredient[]
+  sides       DishSide[]       @relation("DishSides")
+  sideOf      DishSide[]       @relation("SideOf")
+}
+
+// Acompañante de un plato: enlaza un plato principal con un plato acompañante.
+// group=null → acompañante fijo (siempre se sirve con el plato)
+// group="A" → alternativa dentro del grupo (se elige 1 del grupo)
+model DishSide {
+  id      Int     @id @default(autoincrement())
+  dishId  Int
+  dish    Dish    @relation("DishSides", fields: [dishId], references: [id], onDelete: Cascade)
+  sideId  Int
+  side    Dish    @relation("SideOf", fields: [sideId], references: [id], onDelete: Cascade)
+  group   String?
+
+  @@unique([dishId, sideId])
 }
 
 // Ingrediente de un plato: producto, cantidad necesaria y si es opcional.
-// Un plato es "disponible" cuando todos sus ingredientes obligatorios tienen units >= quantity.
+// - optional=true → no afecta disponibilidad
+// - group=null → ingrediente obligatorio individual (debe tener stock)
+// - group="CARNE" → alternativa dentro del grupo (al menos 1 del grupo debe tener stock)
 model DishIngredient {
   id        Int     @id @default(autoincrement())
   dishId    Int
@@ -84,6 +106,7 @@ model DishIngredient {
   product   Product @relation(fields: [productId], references: [id])
   quantity  Int     @default(1)
   optional  Boolean @default(false)
+  group     String?
 
   @@unique([dishId, productId])
 }
