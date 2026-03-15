@@ -2,27 +2,19 @@
 
 import { useState } from "react";
 import { Plus, ChevronDown } from "lucide-react";
-import type { Dish, Product } from "@prisma/client";
-import {
-  DISH_CATEGORY_LABELS,
-  DISH_CATEGORY_EMOJIS,
-  DISH_CATEGORY_ORDER,
-} from "@/lib/constants";
+import type { Product } from "@prisma/client";
+import { DISH_CATEGORY_LABELS, DISH_CATEGORY_EMOJIS, DISH_CATEGORY_ORDER } from "@/lib/constants";
 import { cn } from "@/lib/utils";
-import DishCard from "./DishCard";
+import DishCard, { type DishFull } from "./DishCard";
 import DishForm from "./DishForm";
 
-type DishWithProduct = Dish & { mainProduct: Product | null };
-
 interface DishListProps {
-  dishes: DishWithProduct[];
+  dishes: DishFull[];
   products: Product[];
 }
 
 export default function DishList({ dishes, products }: DishListProps) {
-  const [formDish, setFormDish] = useState<DishWithProduct | null | undefined>(
-    undefined
-  );
+  const [formDish, setFormDish] = useState<DishFull | null | undefined>(undefined);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
 
   function toggleSection(category: string) {
@@ -65,34 +57,20 @@ export default function DishList({ dishes, products }: DishListProps) {
                   onClick={() => toggleSection(category)}
                   className="w-full px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-gray-500 bg-gray-50 border-b border-gray-100 flex items-center gap-1.5 active:bg-gray-100"
                 >
-                  <ChevronDown
-                    size={14}
-                    className={cn(
-                      "transition-transform duration-200 shrink-0",
-                      isCollapsed && "-rotate-90"
-                    )}
-                  />
+                  <ChevronDown size={14} className={cn("transition-transform duration-200 shrink-0", isCollapsed && "-rotate-90")} />
                   <span>{emoji}</span>
                   <span className="flex-1 text-left">{label}</span>
-                  <span className="text-gray-400 normal-case font-normal tracking-normal">
-                    {groupDishes.length}
-                  </span>
+                  <span className="text-gray-400 normal-case font-normal tracking-normal">{groupDishes.length}</span>
                 </button>
-                {!isCollapsed &&
-                  groupDishes.map((dish) => (
-                    <DishCard
-                      key={dish.id}
-                      dish={dish}
-                      onEdit={(d) => setFormDish(d)}
-                    />
-                  ))}
+                {!isCollapsed && groupDishes.map((dish) => (
+                  <DishCard key={dish.id} dish={dish} onEdit={(d) => setFormDish(d)} />
+                ))}
               </section>
             );
           })}
         </div>
       )}
 
-      {/* FAB */}
       {!isEmpty && (
         <button
           onClick={() => setFormDish(null)}
@@ -103,13 +81,8 @@ export default function DishList({ dishes, products }: DishListProps) {
         </button>
       )}
 
-      {/* Modal */}
       {formDish !== undefined && (
-        <DishForm
-          dish={formDish}
-          products={products}
-          onClose={() => setFormDish(undefined)}
-        />
+        <DishForm dish={formDish} products={products} onClose={() => setFormDish(undefined)} />
       )}
     </>
   );

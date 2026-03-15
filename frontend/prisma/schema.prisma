@@ -56,22 +56,36 @@ model Product {
   units     Int             @default(0)
   createdAt DateTime        @default(now())
 
-  dishes               Dish[]
+  dishIngredients      DishIngredient[]
   shoppingSessionItems ShoppingSessionItem[]
 }
 
 // ─── Catálogo de platos ───────────────────────────────────────────────────────
 
 model Dish {
-  id            Int          @id @default(autoincrement())
-  name          String
-  category      DishCategory
-  mainProductId Int?
-  mainProduct   Product?     @relation(fields: [mainProductId], references: [id], onDelete: SetNull)
-  active        Boolean      @default(true)
-  createdAt     DateTime     @default(now())
+  id        Int          @id @default(autoincrement())
+  name      String
+  category  DishCategory
+  notes     String?
+  active    Boolean      @default(true)
+  createdAt DateTime     @default(now())
 
-  planSlots PlanSlot[]
+  planSlots   PlanSlot[]
+  ingredients DishIngredient[]
+}
+
+// Ingrediente de un plato: producto, cantidad necesaria y si es opcional.
+// Un plato es "disponible" cuando todos sus ingredientes obligatorios tienen units >= quantity.
+model DishIngredient {
+  id        Int     @id @default(autoincrement())
+  dishId    Int
+  dish      Dish    @relation(fields: [dishId], references: [id], onDelete: Cascade)
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int     @default(1)
+  optional  Boolean @default(false)
+
+  @@unique([dishId, productId])
 }
 
 // ─── Plan semanal ─────────────────────────────────────────────────────────────

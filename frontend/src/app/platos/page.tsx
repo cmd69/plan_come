@@ -4,7 +4,9 @@ import DishList from "@/components/platos/DishList";
 export default async function PlatosPage() {
   const [dishes, products] = await Promise.all([
     prisma.dish.findMany({
-      include: { mainProduct: true },
+      include: {
+        ingredients: { include: { product: true } },
+      },
       orderBy: [{ category: "asc" }, { name: "asc" }],
     }),
     prisma.product.findMany({

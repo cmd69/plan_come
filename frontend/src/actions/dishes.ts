@@ -4,36 +4,46 @@ import { prisma } from "@/lib/prisma";
 import { DishCategory } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
-export async function createDish(formData: FormData) {
-  const name = (formData.get("name") as string)?.trim();
-  const category = formData.get("category") as DishCategory;
-  const mainProductId = formData.get("mainProductId");
+export type IngredientInput = {
+  productId: number;
+  quantity: number;
+  optional: boolean;
+};
 
-  if (!name || !category) return;
+export type DishInput = {
+  name: string;
+  category: DishCategory;
+  notes: string | null;
+  ingredients: IngredientInput[];
+};
+
+export async function createDish(data: DishInput) {
+  if (!data.name.trim() || !data.category) return;
 
   await prisma.dish.create({
     data: {
-      name,
-      category,
-      mainProductId: mainProductId ? Number(mainProductId) : null,
+      name: data.name.trim(),
+      category: data.category,
+      notes: data.notes?.trim() || null,
+      ingredients: { create: data.ingredients },
     },
   });
   revalidatePath("/platos");
 }
 
-export async function updateDish(id: number, formData: FormData) {
-  const name = (formData.get("name") as string)?.trim();
-  const category = formData.get("category") as DishCategory;
-  const mainProductId = formData.get("mainProductId");
-
-  if (!name || !category) return;
+export async function updateDish(id: number, data: DishInput) {
+  if (!data.name.trim() || !data.category) return;
 
   await prisma.dish.update({
     where: { id },
     data: {
-      name,
-      category,
-      mainProductId: mainProductId ? Number(mainProductId) : null,
+      name: data.name.trim(),
+      category: data.category,
+      notes: data.notes?.trim() || null,
+      ingredients: {
+        deleteMany: {},
+        create: data.ingredients,
+      },
     },
   });
   revalidatePath("/platos");
