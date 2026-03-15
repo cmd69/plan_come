@@ -1,7 +1,7 @@
 DEV_COMPOSE = docker-compose.dev.yml
 PROD_COMPOSE = docker-compose.prod.yml
 
-.PHONY: help up-dev down-dev build-dev logs-dev up-pro build-pro shell-app migrate studio setup
+.PHONY: help up-dev down-dev build-dev logs-dev up-pro build-pro shell-app migrate studio setup regen
 
 help: ## Mostrar esta ayuda
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -26,6 +26,10 @@ shell-app: ## Shell interactivo en el contenedor
 
 migrate: ## Ejecutar migraciones de Prisma
 	docker compose -f $(DEV_COMPOSE) exec app npx prisma migrate dev
+
+regen: ## Regenerar Prisma Client + limpiar cache Turbopack y reiniciar
+	docker compose -f $(DEV_COMPOSE) exec app sh -c "rm -rf .next && npx prisma generate"
+	docker compose -f $(DEV_COMPOSE) restart app
 
 studio: ## Abrir Prisma Studio
 	docker compose -f $(DEV_COMPOSE) exec app npx prisma studio
