@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { DishCategory } from "@prisma/client";
+import { DishType } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 export type IngredientInput = {
@@ -9,55 +9,57 @@ export type IngredientInput = {
   quantity: number;
   optional: boolean;
   group: string | null;
+  groupMin: number;
 };
 
 export type SideInput = {
   sideId: number;
   group: string | null;
+  groupMin: number;
 };
 
 export type DishInput = {
   name: string;
-  category: DishCategory;
+  type: DishType;
+  emoji: string | null;
   notes: string | null;
-  isSide: boolean;
   ingredients: IngredientInput[];
   sides: SideInput[];
 };
 
 export async function createDish(data: DishInput) {
-  if (!data.name.trim() || !data.category) return;
+  if (!data.name.trim() || !data.type) return;
 
   await prisma.dish.create({
     data: {
       name: data.name.trim(),
-      category: data.category,
+      type: data.type,
+      emoji: data.emoji?.trim() || null,
       notes: data.notes?.trim() || null,
-      isSide: data.isSide,
       ingredients: { create: data.ingredients },
-      sides: data.sides.length > 0 ? { create: data.sides } : undefined,
+      sides: data.type !== "ACOMPANANTE" && data.sides.length > 0 ? { create: data.sides } : undefined,
     },
   });
   revalidatePath("/platos");
 }
 
 export async function updateDish(id: number, data: DishInput) {
-  if (!data.name.trim() || !data.category) return;
+  if (!data.name.trim() || !data.type) return;
 
   await prisma.dish.update({
     where: { id },
     data: {
       name: data.name.trim(),
-      category: data.category,
+      type: data.type,
+      emoji: data.emoji?.trim() || null,
       notes: data.notes?.trim() || null,
-      isSide: data.isSide,
       ingredients: {
         deleteMany: {},
         create: data.ingredients,
       },
       sides: {
         deleteMany: {},
-        create: data.sides,
+        create: data.type !== "ACOMPANANTE" ? data.sides : [],
       },
     },
   });

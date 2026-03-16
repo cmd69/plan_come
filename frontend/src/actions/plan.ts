@@ -63,7 +63,7 @@ export async function loadWeekPlan(weekStartISO: string) {
 
 /** Check if a set of required ingredients are all available */
 function isDishIngredientsAvailable(
-  ingredients: { group: string | null; product: { units: number }; quantity: number }[]
+  ingredients: { group: string | null; groupMin: number; product: { units: number }; quantity: number }[]
 ) {
   if (ingredients.length === 0) return true;
   const standalone = ingredients.filter((i) => !i.group);
@@ -77,7 +77,10 @@ function isDishIngredientsAvailable(
   }
   return (
     standalone.every((i) => i.product.units >= i.quantity) &&
-    [...groups.values()].every((m) => m.some((i) => i.product.units >= i.quantity))
+    [...groups.values()].every((members) => {
+      const min = members[0]?.groupMin ?? 1;
+      return members.filter((i) => i.product.units >= i.quantity).length >= min;
+    })
   );
 }
 
@@ -88,9 +91,9 @@ export async function generateWeekPlan(weekStartISO: string) {
 
   const plan = await getOrCreateWeekPlan(weekStart);
 
-  // Get active non-side dishes with ingredients and sides
+  // Get active main dishes (not ACOMPANANTE) with ingredients and sides
   const dishes = await prisma.dish.findMany({
-    where: { active: true, isSide: false },
+    where: { active: true, type: { not: "ACOMPANANTE" } },
     include: {
       ingredients: {
         where: { optional: false },
@@ -119,23 +122,18 @@ export async function generateWeekPlan(weekStartISO: string) {
     const ownOk = isDishIngredientsAvailable(dish.ingredients);
     if (!ownOk) return false;
 
-    // Check sides availability
-    const standaloneSides = dish.sides.filter((s) => !s.group);
+    // Check sides availability (sides always in groups)
     const sideGroups = new Map<string, typeof dish.sides>();
     for (const s of dish.sides) {
-      if (s.group) {
-        const list = sideGroups.get(s.group) ?? [];
-        list.push(s);
-        sideGroups.set(s.group, list);
-      }
+      const g = s.group ?? "A";
+      const list = sideGroups.get(g) ?? [];
+      list.push(s);
+      sideGroups.set(g, list);
     }
-    const standaloneSidesOk = standaloneSides.every((s) =>
-      isDishIngredientsAvailable(s.side.ingredients)
-    );
-    const sideGroupsOk = [...sideGroups.values()].every((members) =>
-      members.some((s) => isDishIngredientsAvailable(s.side.ingredients))
-    );
-    return standaloneSidesOk && sideGroupsOk;
+    return [...sideGroups.values()].every((members) => {
+      const min = members[0]?.groupMin ?? 1;
+      return members.filter((s) => isDishIngredientsAvailable(s.side.ingredients)).length >= min;
+    });
   });
 
   if (availableDishes.length === 0) return plan;
@@ -154,9 +152,15 @@ export async function generateWeekPlan(weekStartISO: string) {
       // Skip if slot already has a dish or is marked eaten out
       if (existing?.dishId || existing?.eatenOut) continue;
 
+      // Filter by meal type: COMIDA slots get COMIDA+MIXTO, CENA slots get CENA+MIXTO
+      const mealDishes = availableDishes.filter((d) =>
+        d.type === "MIXTO" || d.type === meal
+      );
+      if (mealDishes.length === 0) continue;
+
       // Pick a random available dish
       const dish =
-        availableDishes[Math.floor(Math.random() * availableDishes.length)];
+        mealDishes[Math.floor(Math.random() * mealDishes.length)];
 
       if (existing) {
         await prisma.planSlot.update({
@@ -244,8 +248,9 @@ export async function regenerateSlot(
   day: DayOfWeek,
   meal: MealType
 ) {
+  // Filter by meal type: COMIDA slots get COMIDA+MIXTO, CENA slots get CENA+MIXTO
   const dishes = await prisma.dish.findMany({
-    where: { active: true, isSide: false },
+    where: { active: true, type: { in: [meal, "MIXTO"] } },
     include: {
       ingredients: {
         where: { optional: false },
@@ -268,21 +273,17 @@ export async function regenerateSlot(
 
   const available = dishes.filter((dish) => {
     if (!isDishIngredientsAvailable(dish.ingredients)) return false;
-    const standaloneSides = dish.sides.filter((s) => !s.group);
     const sideGroups = new Map<string, typeof dish.sides>();
     for (const s of dish.sides) {
-      if (s.group) {
-        const list = sideGroups.get(s.group) ?? [];
-        list.push(s);
-        sideGroups.set(s.group, list);
-      }
+      const g = s.group ?? "A";
+      const list = sideGroups.get(g) ?? [];
+      list.push(s);
+      sideGroups.set(g, list);
     }
-    return (
-      standaloneSides.every((s) => isDishIngredientsAvailable(s.side.ingredients)) &&
-      [...sideGroups.values()].every((m) =>
-        m.some((s) => isDishIngredientsAvailable(s.side.ingredients))
-      )
-    );
+    return [...sideGroups.values()].every((members) => {
+      const min = members[0]?.groupMin ?? 1;
+      return members.filter((s) => isDishIngredientsAvailable(s.side.ingredients)).length >= min;
+    });
   });
 
   if (available.length === 0) return;

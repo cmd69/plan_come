@@ -28,7 +28,7 @@ export default async function PlanPage() {
 
   // Load all active dishes for the picker
   const dishes = await prisma.dish.findMany({
-    orderBy: [{ category: "asc" }, { name: "asc" }],
+    orderBy: [{ type: "asc" }, { name: "asc" }],
   });
 
   return (

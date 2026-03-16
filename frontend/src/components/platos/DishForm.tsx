@@ -3,51 +3,110 @@
 import { useTransition, useRef, useEffect, useState } from "react";
 import { X, Plus, Minus } from "lucide-react";
 import { createDish, updateDish, type IngredientInput, type SideInput } from "@/actions/dishes";
-import {
-  DISH_CATEGORY_LABELS,
-  DISH_CATEGORY_EMOJIS,
-  DISH_CATEGORY_ORDER,
-} from "@/lib/constants";
-import type { Product, Category } from "@prisma/client";
+import { DISH_TYPE_LABELS, DISH_TYPE_EMOJIS, DISH_TYPE_ORDER } from "@/lib/constants";
+import type { Product, Category, DishType } from "@prisma/client";
 import { cn } from "@/lib/utils";
 import IngredientPicker from "./IngredientPicker";
 import type { DishFull } from "./DishCard";
 
+const GROUP_LABELS = ["A", "B", "C", "D", "E", "F"];
+const GROUP_COLORS: Record<string, { bg: string; text: string; border: string; borderDashed: string; check: string }> = {
+  A: { bg: "bg-blue-50", text: "text-blue-700", border: "border-blue-200", borderDashed: "border-blue-300", check: "bg-blue-500" },
+  B: { bg: "bg-violet-50", text: "text-violet-700", border: "border-violet-200", borderDashed: "border-violet-300", check: "bg-violet-500" },
+  C: { bg: "bg-teal-50", text: "text-teal-700", border: "border-teal-200", borderDashed: "border-teal-300", check: "bg-teal-500" },
+  D: { bg: "bg-cyan-50", text: "text-cyan-700", border: "border-cyan-200", borderDashed: "border-cyan-300", check: "bg-cyan-500" },
+  E: { bg: "bg-rose-50", text: "text-rose-700", border: "border-rose-200", borderDashed: "border-rose-300", check: "bg-rose-500" },
+  F: { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-200", borderDashed: "border-amber-300", check: "bg-amber-500" },
+};
+
+const TYPE_STYLES: Record<DishType, { active: string; inactive: string }> = {
+  COMIDA: { active: "bg-yellow-100 border-yellow-400 text-yellow-800", inactive: "border-gray-200 text-gray-500" },
+  CENA: { active: "bg-indigo-100 border-indigo-400 text-indigo-800", inactive: "border-gray-200 text-gray-500" },
+  MIXTO: { active: "bg-emerald-100 border-emerald-400 text-emerald-800", inactive: "border-gray-200 text-gray-500" },
+  ACOMPANANTE: { active: "bg-orange-100 border-orange-400 text-orange-800", inactive: "border-gray-200 text-gray-500" },
+};
+
 interface DishFormProps {
   dish?: DishFull | null;
+  defaultType?: DishType;
   allDishes: DishFull[];
   products: Product[];
   categories: Category[];
   onClose: () => void;
 }
 
-export default function DishForm({ dish, allDishes, products, categories, onClose }: DishFormProps) {
+export default function DishForm({ dish, defaultType, allDishes, products, categories, onClose }: DishFormProps) {
   const [isPending, startTransition] = useTransition();
   const firstInputRef = useRef<HTMLInputElement>(null);
-  const [showPicker, setShowPicker] = useState(false);
-  const [isSide, setIsSide] = useState(dish?.isSide ?? false);
+  const [dishType, setDishType] = useState<DishType>(dish?.type ?? defaultType ?? "MIXTO");
+  const [emoji, setEmoji] = useState(dish?.emoji ?? "");
 
+  // Picker state: which context is requesting products
+  const [pickerTarget, setPickerTarget] = useState<
+    | { type: "base" }
+    | { type: "optional" }
+    | { type: "group"; group: string }
+    | null
+  >(null);
+
+  // Ingredients state
   const [ingredients, setIngredients] = useState<IngredientInput[]>(
     dish?.ingredients.map((i) => ({
       productId: i.productId,
       quantity: i.quantity,
       optional: i.optional,
       group: i.group,
+      groupMin: i.groupMin,
     })) ?? []
   );
 
+  // Sides state
   const [sides, setSides] = useState<SideInput[]>(
-    dish?.sides.map((s) => ({ sideId: s.sideId, group: s.group })) ?? []
+    dish?.sides.map((s) => ({ sideId: s.sideId, group: s.group, groupMin: s.groupMin })) ?? []
   );
 
-  // Available side dishes (excluding self)
-  const availableSides = allDishes.filter(
-    (d) => d.isSide && d.id !== dish?.id
-  );
+  // Side picker
+  const [sidePickerGroup, setSidePickerGroup] = useState<string | null>(null);
+
+  // Available side dishes (type ACOMPANANTE)
+  const availableSides = allDishes.filter((d) => d.type === "ACOMPANANTE" && d.id !== dish?.id);
 
   useEffect(() => {
     firstInputRef.current?.focus();
   }, []);
+
+  // ── Derived data ──
+
+  const baseIngredients = ingredients.filter((i) => !i.optional && !i.group);
+  const optionalIngredients = ingredients.filter((i) => i.optional);
+  const ingredientGroups = new Map<string, IngredientInput[]>();
+  for (const ing of ingredients) {
+    if (ing.group && !ing.optional) {
+      const list = ingredientGroups.get(ing.group) ?? [];
+      list.push(ing);
+      ingredientGroups.set(ing.group, list);
+    }
+  }
+  const usedIngredientGroups = [...ingredientGroups.keys()].sort();
+
+  const sideGroups = new Map<string, SideInput[]>();
+  for (const s of sides) {
+    const g = s.group ?? "A";
+    const list = sideGroups.get(g) ?? [];
+    list.push(s);
+    sideGroups.set(g, list);
+  }
+  const usedSideGroups = [...sideGroups.keys()].sort();
+
+  // ── Helpers ──
+
+  function getProduct(id: number) {
+    return products.find((p) => p.id === id);
+  }
+
+  function nextGroupLabel(used: string[]): string | null {
+    return GROUP_LABELS.find((l) => !used.includes(l)) ?? null;
+  }
 
   function updateQuantity(productId: number, delta: number) {
     setIngredients((prev) =>
@@ -63,45 +122,88 @@ export default function DishForm({ dish, allDishes, products, categories, onClos
     setIngredients((prev) => prev.filter((i) => i.productId !== productId));
   }
 
-  const GROUP_LABELS = ["A", "B", "C", "D"];
-  const GROUP_COLORS: Record<string, { bg: string; text: string; border: string }> = {
-    A: { bg: "bg-blue-100", text: "text-blue-700", border: "border-blue-200" },
-    B: { bg: "bg-violet-100", text: "text-violet-700", border: "border-violet-200" },
-    C: { bg: "bg-teal-100", text: "text-teal-700", border: "border-teal-200" },
-    D: { bg: "bg-cyan-100", text: "text-cyan-700", border: "border-cyan-200" },
-  };
-
-  function cycleGroup(productId: number) {
-    setIngredients((prev) =>
-      prev.map((i) => {
-        if (i.productId !== productId) return i;
-        const currentIdx = i.group ? GROUP_LABELS.indexOf(i.group) : -1;
-        const nextIdx = currentIdx + 1;
-        const nextGroup = nextIdx < GROUP_LABELS.length ? GROUP_LABELS[nextIdx] : null;
-        return { ...i, group: nextGroup, optional: false };
-      })
-    );
+  function updateGroupMin(group: string, delta: number, isSideGroup: boolean) {
+    if (isSideGroup) {
+      setSides((prev) =>
+        prev.map((s) =>
+          s.group === group
+            ? { ...s, groupMin: Math.max(1, s.groupMin + delta) }
+            : s
+        )
+      );
+    } else {
+      setIngredients((prev) =>
+        prev.map((i) =>
+          i.group === group
+            ? { ...i, groupMin: Math.max(1, i.groupMin + delta) }
+            : i
+        )
+      );
+    }
   }
 
-  function toggleSide(sideId: number) {
-    setSides((prev) => {
-      const exists = prev.find((s) => s.sideId === sideId);
-      if (exists) return prev.filter((s) => s.sideId !== sideId);
-      return [...prev, { sideId, group: null }];
+  function getGroupMin(group: string, isSideGroup: boolean): number {
+    if (isSideGroup) {
+      return sides.find((s) => s.group === group)?.groupMin ?? 1;
+    }
+    return ingredients.find((i) => i.group === group)?.groupMin ?? 1;
+  }
+
+  // ── Picker callbacks ──
+
+  function handlePickerConfirm(productIds: number[]) {
+    if (!pickerTarget) return;
+    const target = pickerTarget;
+
+    setIngredients((prev) => {
+      let next = [...prev];
+
+      if (target.type === "base") {
+        next = next.filter((i) => i.group || i.optional || productIds.includes(i.productId));
+        for (const pid of productIds) {
+          if (!next.find((i) => i.productId === pid)) {
+            next.push({ productId: pid, quantity: 1, optional: false, group: null, groupMin: 1 });
+          }
+        }
+      } else if (target.type === "optional") {
+        next = next.filter((i) => !i.optional || productIds.includes(i.productId));
+        for (const pid of productIds) {
+          if (!next.find((i) => i.productId === pid)) {
+            next.push({ productId: pid, quantity: 1, optional: true, group: null, groupMin: 1 });
+          }
+        }
+      } else if (target.type === "group") {
+        const currentMin = next.find((i) => i.group === target.group)?.groupMin ?? 1;
+        next = next.filter((i) => i.group !== target.group || productIds.includes(i.productId));
+        for (const pid of productIds) {
+          if (!next.find((i) => i.productId === pid)) {
+            next.push({ productId: pid, quantity: 1, optional: false, group: target.group, groupMin: currentMin });
+          }
+        }
+      }
+
+      return next;
     });
   }
 
-  function cycleSideGroup(sideId: number) {
-    setSides((prev) =>
-      prev.map((s) => {
-        if (s.sideId !== sideId) return s;
-        const currentIdx = s.group ? GROUP_LABELS.indexOf(s.group) : -1;
-        const nextIdx = currentIdx + 1;
-        const nextGroup = nextIdx < GROUP_LABELS.length ? GROUP_LABELS[nextIdx] : null;
-        return { ...s, group: nextGroup };
-      })
-    );
+  function handleSidePickerConfirm(sideIds: number[]) {
+    if (sidePickerGroup === null) return;
+    const group = sidePickerGroup;
+
+    setSides((prev) => {
+      let next = [...prev];
+      const currentMin = next.find((s) => s.group === group)?.groupMin ?? 1;
+      next = next.filter((s) => s.group !== group || sideIds.includes(s.sideId));
+      for (const sid of sideIds) {
+        if (!next.find((s) => s.sideId === sid)) {
+          next.push({ sideId: sid, group, groupMin: currentMin });
+        }
+      }
+      return next;
+    });
   }
+
+  // ── Submit ──
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -109,11 +211,11 @@ export default function DishForm({ dish, allDishes, products, categories, onClos
     startTransition(async () => {
       const data = {
         name: fd.get("name") as string,
-        category: fd.get("category") as Parameters<typeof createDish>[0]["category"],
+        type: dishType,
+        emoji: emoji || null,
         notes: (fd.get("notes") as string) || null,
-        isSide,
         ingredients,
-        sides: isSide ? [] : sides,
+        sides: dishType !== "ACOMPANANTE" ? sides : [],
       };
       if (dish) {
         await updateDish(dish.id, data);
@@ -124,253 +226,346 @@ export default function DishForm({ dish, allDishes, products, categories, onClos
     });
   }
 
+  // ── Render helpers ──
+
+  function renderIngredientChip(ing: IngredientInput, colorClass?: string) {
+    const product = getProduct(ing.productId);
+    if (!product) return null;
+    return (
+      <div
+        key={ing.productId}
+        className={cn(
+          "flex items-center gap-2 px-3 py-2 rounded-xl border",
+          colorClass ?? "border-gray-200 bg-gray-50"
+        )}
+      >
+        <span className="text-lg leading-none">{product.icon || "📦"}</span>
+        <span className="flex-1 text-sm font-medium text-gray-800 truncate">
+          {product.name}
+        </span>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => updateQuantity(product.id, -1)}
+            disabled={ing.quantity <= 1}
+            className="w-6 h-6 flex items-center justify-center rounded-full border border-gray-300 text-gray-600 disabled:opacity-30"
+          >
+            <Minus size={12} />
+          </button>
+          <span className="w-5 text-center text-xs font-bold tabular-nums">
+            {ing.quantity}
+          </span>
+          <button
+            type="button"
+            onClick={() => updateQuantity(product.id, 1)}
+            className="w-6 h-6 flex items-center justify-center rounded-full border border-gray-300 text-gray-600"
+          >
+            <Plus size={12} />
+          </button>
+        </div>
+        <button
+          type="button"
+          onClick={() => removeIngredient(product.id)}
+          className="w-6 h-6 flex items-center justify-center text-gray-300 active:text-red-500"
+        >
+          <X size={14} />
+        </button>
+      </div>
+    );
+  }
+
+  // IDs for picker exclude
+  function idsExcept(target: { type: string; group?: string }) {
+    const exclude = new Set<number>();
+    for (const ing of ingredients) {
+      if (target.type === "base" && !ing.group && !ing.optional) continue;
+      if (target.type === "optional" && ing.optional) continue;
+      if (target.type === "group" && ing.group === (target as { group: string }).group) continue;
+      exclude.add(ing.productId);
+    }
+    return exclude;
+  }
+
+  function selectedIdsFor(target: { type: string; group?: string }): Set<number> {
+    if (target.type === "base") return new Set(baseIngredients.map((i) => i.productId));
+    if (target.type === "optional") return new Set(optionalIngredients.map((i) => i.productId));
+    if (target.type === "group") {
+      const g = (target as { group: string }).group;
+      return new Set((ingredientGroups.get(g) ?? []).map((i) => i.productId));
+    }
+    return new Set();
+  }
+
   return (
     <>
       <div className="fixed inset-0 bg-black/40 z-50" onClick={onClose} />
 
       <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl z-[60] max-h-[90vh] flex flex-col">
-        {/* Cabecera */}
         <div className="flex items-center justify-between px-4 pt-4 pb-2 shrink-0">
           <h2 className="text-lg font-semibold text-gray-900">
             {dish ? "Editar plato" : "Nuevo plato"}
           </h2>
-          <button
-            onClick={onClose}
-            className="w-9 h-9 flex items-center justify-center text-gray-400"
-          >
+          <button onClick={onClose} className="w-9 h-9 flex items-center justify-center text-gray-400">
             <X size={20} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="px-4 pb-8 flex flex-col gap-5 overflow-y-auto">
-          {/* Nombre */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">Nombre</label>
-            <input
-              ref={firstInputRef}
-              name="name"
-              type="text"
-              defaultValue={dish?.name ?? ""}
-              required
-              placeholder="Ej: Pollo al horno"
-              className="h-12 px-3 rounded-xl border border-gray-200 bg-gray-50 text-base outline-none focus:border-emerald-500 focus:bg-white transition-colors"
-            />
+          {/* Nombre + Emoji */}
+          <div className="flex gap-3">
+            <div className="flex flex-col gap-1.5 flex-1">
+              <label className="text-sm font-medium text-gray-700">Nombre</label>
+              <input
+                ref={firstInputRef}
+                name="name"
+                type="text"
+                defaultValue={dish?.name ?? ""}
+                required
+                placeholder="Ej: Pollo al horno"
+                className="h-12 px-3 rounded-xl border border-gray-200 bg-gray-50 text-base outline-none focus:border-emerald-500 focus:bg-white transition-colors"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5 w-16">
+              <label className="text-sm font-medium text-gray-700">Emoji</label>
+              <input
+                type="text"
+                value={emoji}
+                onChange={(e) => setEmoji(e.target.value)}
+                placeholder="🍽️"
+                className="h-12 px-1 rounded-xl border border-gray-200 bg-gray-50 text-2xl text-center outline-none focus:border-emerald-500 focus:bg-white transition-colors"
+              />
+            </div>
           </div>
 
-          {/* Categoría */}
+          {/* Tipo de plato */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">Categoría</label>
-            <select
-              name="category"
-              defaultValue={dish?.category ?? ""}
-              required
-              className="h-12 px-3 rounded-xl border border-gray-200 bg-gray-50 text-base outline-none focus:border-emerald-500 focus:bg-white transition-colors appearance-none"
-            >
-              <option value="" disabled>Selecciona una categoría</option>
-              {DISH_CATEGORY_ORDER.map((cat) => (
-                <option key={cat} value={cat}>
-                  {DISH_CATEGORY_EMOJIS[cat]} {DISH_CATEGORY_LABELS[cat]}
-                </option>
-              ))}
-            </select>
+            <label className="text-sm font-medium text-gray-700">Tipo</label>
+            <div className="grid grid-cols-4 gap-2">
+              {DISH_TYPE_ORDER.map((t) => {
+                const isActive = dishType === t;
+                const styles = TYPE_STYLES[t];
+                return (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setDishType(t)}
+                    className={cn(
+                      "flex flex-col items-center gap-1 py-2.5 rounded-xl border-2 text-xs font-semibold transition-colors",
+                      isActive ? styles.active : styles.inactive
+                    )}
+                  >
+                    <span className="text-lg leading-none">{DISH_TYPE_EMOJIS[t]}</span>
+                    <span>{DISH_TYPE_LABELS[t]}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
-          {/* Acompañante toggle */}
-          <button
-            type="button"
-            onClick={() => setIsSide((v) => !v)}
-            className={cn(
-              "flex items-center gap-3 px-3 py-3 rounded-xl border transition-colors",
-              isSide ? "border-orange-300 bg-orange-50" : "border-gray-200 bg-gray-50"
-            )}
-          >
-            <span className="text-lg">🍽️</span>
-            <span className="flex-1 text-sm font-medium text-gray-700 text-left">
-              Es un acompañante
-            </span>
-            <div className={cn(
-              "w-10 h-6 rounded-full relative transition-colors",
-              isSide ? "bg-orange-500" : "bg-gray-300"
-            )}>
-              <div className={cn(
-                "absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform",
-                isSide ? "translate-x-[18px]" : "translate-x-0.5"
-              )} />
-            </div>
-          </button>
+          {/* ══════ INGREDIENTES ══════ */}
 
-          {/* Acompañantes selector (solo para platos principales) */}
-          {!isSide && availableSides.length > 0 && (
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-gray-700">
-                Acompañantes
-              </label>
-              <div className="flex flex-col gap-1.5">
-                {availableSides.map((sideDish) => {
-                  const selected = sides.find((s) => s.sideId === sideDish.id);
-                  return (
-                    <div
-                      key={sideDish.id}
-                      className={cn(
-                        "flex items-center gap-2 px-3 py-2 rounded-xl border transition-colors",
-                        selected
-                          ? selected.group && GROUP_COLORS[selected.group]
-                            ? `${GROUP_COLORS[selected.group].border} ${GROUP_COLORS[selected.group].bg}/30`
-                            : "border-orange-200 bg-orange-50/50"
-                          : "border-gray-200 bg-gray-50"
-                      )}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => toggleSide(sideDish.id)}
-                        className="flex items-center gap-2 flex-1 min-w-0"
-                      >
-                        <span className="text-lg leading-none">
-                          {DISH_CATEGORY_EMOJIS[sideDish.category]}
-                        </span>
-                        <span className={cn(
-                          "text-sm font-medium truncate",
-                          selected ? "text-gray-800" : "text-gray-400"
-                        )}>
-                          {sideDish.name}
-                        </span>
-                      </button>
-                      {selected && (
-                        <button
-                          type="button"
-                          onClick={() => cycleSideGroup(sideDish.id)}
-                          className={cn(
-                            "shrink-0 h-6 px-1.5 rounded-full text-[10px] font-bold border transition-colors",
-                            selected.group && GROUP_COLORS[selected.group]
-                              ? `${GROUP_COLORS[selected.group].bg} ${GROUP_COLORS[selected.group].text} ${GROUP_COLORS[selected.group].border}`
-                              : "bg-gray-100 text-gray-400 border-gray-200"
-                          )}
-                        >
-                          {selected.group ? `GRP ${selected.group}` : "GRP"}
-                        </button>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Ingredientes */}
+          {/* Base (obligatorios) */}
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-gray-700">
-                Ingredientes
+              <label className="text-sm font-medium text-gray-700">Obligatorios</label>
+              <button
+                type="button"
+                onClick={() => setPickerTarget({ type: "base" })}
+                className="w-7 h-7 flex items-center justify-center rounded-full bg-emerald-100 text-emerald-600 active:bg-emerald-200"
+              >
+                <Plus size={14} />
+              </button>
+            </div>
+            {baseIngredients.map((ing) => renderIngredientChip(ing, "border-emerald-200 bg-emerald-50/50"))}
+          </div>
+
+          {/* Opcionales */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+                Opcionales
+                <span className="text-gray-400 font-normal text-xs">(no afectan disponibilidad)</span>
               </label>
               <button
                 type="button"
-                onClick={() => setShowPicker(true)}
-                className="flex items-center gap-1 text-xs font-semibold text-emerald-600 active:text-emerald-700"
+                onClick={() => setPickerTarget({ type: "optional" })}
+                className="w-7 h-7 flex items-center justify-center rounded-full bg-amber-100 text-amber-600 active:bg-amber-200"
               >
                 <Plus size={14} />
-                {ingredients.length > 0 ? "Editar" : "Añadir"}
               </button>
             </div>
+            {optionalIngredients.map((ing) => renderIngredientChip(ing, "border-amber-200 bg-amber-50/50"))}
+          </div>
 
-            {ingredients.length === 0 ? (
+          {/* Ingredient groups */}
+          {usedIngredientGroups.map((groupName) => {
+            const members = ingredientGroups.get(groupName) ?? [];
+            const colors = GROUP_COLORS[groupName];
+            const min = getGroupMin(groupName, false);
+            return (
+              <div key={groupName} className="flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  <span className={cn("text-xs font-bold px-2 py-0.5 rounded-full", colors?.bg, colors?.text)}>
+                    Grupo {groupName}
+                  </span>
+                  <span className="text-xs text-gray-400">mín.</span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => updateGroupMin(groupName, -1, false)}
+                      disabled={min <= 1}
+                      className="w-5 h-5 flex items-center justify-center rounded-full border border-gray-300 text-gray-600 disabled:opacity-30"
+                    >
+                      <Minus size={10} />
+                    </button>
+                    <span className="w-4 text-center text-xs font-bold tabular-nums">{min}</span>
+                    <button
+                      type="button"
+                      onClick={() => updateGroupMin(groupName, 1, false)}
+                      disabled={min >= members.length}
+                      className="w-5 h-5 flex items-center justify-center rounded-full border border-gray-300 text-gray-600 disabled:opacity-30"
+                    >
+                      <Plus size={10} />
+                    </button>
+                  </div>
+                  <span className="text-xs text-gray-400">de {members.length}</span>
+                  <div className="flex-1" />
+                  <button
+                    type="button"
+                    onClick={() => setPickerTarget({ type: "group", group: groupName })}
+                    className={cn("w-7 h-7 flex items-center justify-center rounded-full", colors?.bg, colors?.text, "active:opacity-70")}
+                  >
+                    <Plus size={14} />
+                  </button>
+                </div>
+                {members.map((ing) =>
+                  renderIngredientChip(ing, `${colors?.border} ${colors?.bg}/50`)
+                )}
+              </div>
+            );
+          })}
+
+          {/* Add new ingredient group */}
+          {(() => {
+            const nextGroup = nextGroupLabel(usedIngredientGroups);
+            if (!nextGroup) return null;
+            const colors = GROUP_COLORS[nextGroup];
+            return (
               <button
                 type="button"
-                onClick={() => setShowPicker(true)}
-                className="py-6 rounded-xl border-2 border-dashed border-gray-200 text-sm text-gray-400 active:bg-gray-50"
+                onClick={() => setPickerTarget({ type: "group", group: nextGroup })}
+                className={cn(
+                  "flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border-2 border-dashed text-sm font-medium transition-colors active:opacity-70",
+                  colors?.borderDashed, colors?.text
+                )}
               >
-                Toca para seleccionar ingredientes
+                <Plus size={14} />
+                Nuevo grupo de alternativas ({nextGroup})
               </button>
-            ) : (
-              <div className="flex flex-col gap-1.5">
-                {ingredients.map((ing) => {
-                  const product = products.find((p) => p.id === ing.productId);
-                  if (!product) return null;
+            );
+          })()}
+
+          {/* ══════ ACOMPAÑANTES ══════ */}
+          {dishType !== "ACOMPANANTE" && availableSides.length > 0 && (
+            <>
+              <div className="border-t border-gray-100 pt-4 flex flex-col gap-3">
+                <label className="text-sm font-bold text-gray-700">Acompañantes</label>
+
+                {/* Side groups */}
+                {usedSideGroups.map((groupName) => {
+                  const members = sideGroups.get(groupName) ?? [];
+                  const colors = GROUP_COLORS[groupName];
+                  const min = getGroupMin(groupName, true);
                   return (
-                    <div
-                      key={ing.productId}
-                      className={cn(
-                        "flex items-center gap-2 px-3 py-2 rounded-xl border",
-                        ing.optional
-                          ? "border-amber-200 bg-amber-50/50"
-                          : ing.group && GROUP_COLORS[ing.group]
-                            ? `${GROUP_COLORS[ing.group].border} ${GROUP_COLORS[ing.group].bg}/30`
-                            : "border-gray-200 bg-gray-50"
-                      )}
-                    >
-                      <span className="text-lg leading-none">
-                        {product.icon || "📦"}
-                      </span>
-                      <span className="flex-1 text-sm font-medium text-gray-800 truncate">
-                        {product.name}
-                      </span>
-                      {ing.optional && (
-                        <span className="text-[10px] font-semibold text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded-full">
-                          OPC
+                    <div key={groupName} className="flex flex-col gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className={cn("text-xs font-bold px-2 py-0.5 rounded-full", colors?.bg, colors?.text)}>
+                          Grupo {groupName}
                         </span>
-                      )}
-                      {/* Group toggle — tap to cycle A→B→C→D→none */}
-                      {!ing.optional && (
+                        <span className="text-xs text-gray-400">mín.</span>
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => updateGroupMin(groupName, -1, true)}
+                            disabled={min <= 1}
+                            className="w-5 h-5 flex items-center justify-center rounded-full border border-gray-300 text-gray-600 disabled:opacity-30"
+                          >
+                            <Minus size={10} />
+                          </button>
+                          <span className="w-4 text-center text-xs font-bold tabular-nums">{min}</span>
+                          <button
+                            type="button"
+                            onClick={() => updateGroupMin(groupName, 1, true)}
+                            disabled={min >= members.length}
+                            className="w-5 h-5 flex items-center justify-center rounded-full border border-gray-300 text-gray-600 disabled:opacity-30"
+                          >
+                            <Plus size={10} />
+                          </button>
+                        </div>
+                        <span className="text-xs text-gray-400">de {members.length}</span>
+                        <div className="flex-1" />
                         <button
                           type="button"
-                          onClick={() => cycleGroup(product.id)}
-                          className={cn(
-                            "shrink-0 h-6 px-1.5 rounded-full text-[10px] font-bold border transition-colors",
-                            ing.group && GROUP_COLORS[ing.group]
-                              ? `${GROUP_COLORS[ing.group].bg} ${GROUP_COLORS[ing.group].text} ${GROUP_COLORS[ing.group].border}`
-                              : "bg-gray-100 text-gray-400 border-gray-200"
-                          )}
-                          title="Grupo de alternativas"
+                          onClick={() => setSidePickerGroup(groupName)}
+                          className={cn("w-7 h-7 flex items-center justify-center rounded-full", colors?.bg, colors?.text, "active:opacity-70")}
                         >
-                          {ing.group ? `GRP ${ing.group}` : "GRP"}
-                        </button>
-                      )}
-                      {/* Quantity controls */}
-                      <div className="flex items-center gap-1">
-                        <button
-                          type="button"
-                          onClick={() => updateQuantity(product.id, -1)}
-                          disabled={ing.quantity <= 1}
-                          className="w-6 h-6 flex items-center justify-center rounded-full border border-gray-300 text-gray-600 disabled:opacity-30"
-                        >
-                          <Minus size={12} />
-                        </button>
-                        <span className="w-5 text-center text-xs font-bold tabular-nums">
-                          {ing.quantity}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => updateQuantity(product.id, 1)}
-                          className="w-6 h-6 flex items-center justify-center rounded-full border border-gray-300 text-gray-600"
-                        >
-                          <Plus size={12} />
+                          <Plus size={14} />
                         </button>
                       </div>
-                      {/* Remove */}
-                      <button
-                        type="button"
-                        onClick={() => removeIngredient(product.id)}
-                        className="w-6 h-6 flex items-center justify-center text-gray-300 active:text-red-500"
-                      >
-                        <X size={14} />
-                      </button>
+                      {members.map((s) => {
+                        const sideDish = availableSides.find((d) => d.id === s.sideId);
+                        if (!sideDish) return null;
+                        return (
+                          <div key={s.sideId} className={cn("flex items-center gap-2 px-3 py-2 rounded-xl border", colors?.border, `${colors?.bg}/50`)}>
+                            <span className="text-lg leading-none">{sideDish.emoji || "🥗"}</span>
+                            <span className="flex-1 text-sm font-medium text-gray-800 truncate">{sideDish.name}</span>
+                            <button
+                              type="button"
+                              onClick={() => setSides((prev) => prev.filter((x) => x.sideId !== s.sideId))}
+                              className="w-6 h-6 flex items-center justify-center text-gray-300 active:text-red-500"
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
+                        );
+                      })}
                     </div>
                   );
                 })}
+
+                {/* New side group button */}
+                {(() => {
+                  const nextGroup = nextGroupLabel(usedSideGroups);
+                  if (!nextGroup) return null;
+                  const colors = GROUP_COLORS[nextGroup];
+                  return (
+                    <button
+                      type="button"
+                      onClick={() => setSidePickerGroup(nextGroup)}
+                      className={cn(
+                        "flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border-2 border-dashed text-sm font-medium transition-colors active:opacity-70",
+                        colors?.borderDashed, colors?.text
+                      )}
+                    >
+                      <Plus size={14} />
+                      Nuevo grupo de acompañantes ({nextGroup})
+                    </button>
+                  );
+                })()}
               </div>
-            )}
-          </div>
+            </>
+          )}
 
           {/* Notas */}
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-gray-700">
-              Notas{" "}
-              <span className="text-gray-400 font-normal">(opcional)</span>
+              Notas <span className="text-gray-400 font-normal">(opcional)</span>
             </label>
             <textarea
               name="notes"
               defaultValue={dish?.notes ?? ""}
               placeholder="Ej: Marinar 30 min antes, servir con ensalada…"
-              rows={3}
+              rows={2}
               className="px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-base outline-none focus:border-emerald-500 focus:bg-white transition-colors resize-none"
             />
           </div>
@@ -398,15 +593,102 @@ export default function DishForm({ dish, allDishes, products, categories, onClos
         </form>
       </div>
 
-      {/* Ingredient Picker modal */}
-      {showPicker && (
+      {/* Ingredient Picker */}
+      {pickerTarget && (
         <IngredientPicker
           products={products}
           categories={categories}
-          selected={ingredients}
-          onChange={setIngredients}
-          onClose={() => setShowPicker(false)}
+          selectedIds={selectedIdsFor(pickerTarget)}
+          excludeIds={idsExcept(pickerTarget)}
+          onConfirm={(ids) => handlePickerConfirm(ids)}
+          onClose={() => setPickerTarget(null)}
+          title={
+            pickerTarget.type === "base" ? "Obligatorios"
+            : pickerTarget.type === "optional" ? "Opcionales"
+            : `Grupo ${pickerTarget.group}`
+          }
+          accentColor={
+            pickerTarget.type === "base"
+              ? { border: "border-emerald-500", bg: "bg-emerald-50", text: "text-emerald-700", check: "bg-emerald-500" }
+              : pickerTarget.type === "optional"
+                ? { border: "border-amber-400", bg: "bg-amber-50", text: "text-amber-700", check: "bg-amber-500" }
+                : (() => {
+                    const c = GROUP_COLORS[pickerTarget.group];
+                    return c ? { border: c.border.replace("-200", "-500"), bg: c.bg, text: c.text, check: c.check } : undefined;
+                  })()
+          }
         />
+      )}
+
+      {/* Side Picker */}
+      {sidePickerGroup !== null && (
+        <>
+          <div className="fixed inset-0 bg-black/40 z-[70]" onClick={() => setSidePickerGroup(null)} />
+          <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl z-[80] max-h-[70vh] flex flex-col">
+            <div className="flex items-center justify-between px-4 pt-4 pb-2 shrink-0 border-b border-gray-100">
+              <h2 className="text-lg font-semibold text-gray-900">
+                Acompañantes — Grupo {sidePickerGroup}
+              </h2>
+              <button onClick={() => setSidePickerGroup(null)} className="w-9 h-9 flex items-center justify-center text-gray-400">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2">
+              {availableSides.map((sideDish) => {
+                const group = sidePickerGroup;
+                const isSelected = sides.some((s) => s.sideId === sideDish.id && s.group === group);
+                const isUsedElsewhere = sides.some((s) => s.sideId === sideDish.id && s.group !== group);
+                if (isUsedElsewhere) return null;
+                const colors = GROUP_COLORS[group!];
+                return (
+                  <button
+                    key={sideDish.id}
+                    type="button"
+                    onClick={() => {
+                      if (isSelected) {
+                        setSides((prev) => prev.filter((s) => !(s.sideId === sideDish.id && s.group === group)));
+                      } else {
+                        setSides((prev) => [...prev, { sideId: sideDish.id, group, groupMin: 1 }]);
+                      }
+                    }}
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-3 rounded-xl border-2 transition-colors text-left",
+                      isSelected
+                        ? `${colors?.border} ${colors?.bg}`
+                        : "border-gray-200 bg-white active:bg-gray-50"
+                    )}
+                  >
+                    <span className="text-xl">{sideDish.emoji || "🥗"}</span>
+                    <span className={cn("flex-1 text-sm font-medium", isSelected ? "text-gray-900" : "text-gray-600")}>
+                      {sideDish.name}
+                    </span>
+                    {isSelected && (
+                      <span className={cn("w-5 h-5 rounded-full flex items-center justify-center text-white text-xs", colors?.check)}>
+                        ✓
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="shrink-0 border-t border-gray-100 px-4 py-3">
+              <button
+                type="button"
+                onClick={() => {
+                  handleSidePickerConfirm(
+                    sides
+                      .filter((s) => s.group === sidePickerGroup)
+                      .map((s) => s.sideId)
+                  );
+                  setSidePickerGroup(null);
+                }}
+                className="w-full py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-xl active:bg-emerald-700"
+              >
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </>
       )}
     </>
   );

@@ -1,4 +1,4 @@
-import { DishCategory, DayOfWeek, MealType } from "@prisma/client";
+import { DishType, DayOfWeek, MealType } from "@prisma/client";
 import type { Category } from "@prisma/client";
 
 // ─── Tipo exportable para categorías dinámicas ───────────────────────────────
@@ -20,39 +20,30 @@ export function buildCategoryMaps(categories: CategoryInfo[]) {
   return { labels, emojis, order };
 }
 
-// ─── Categorías de platos (siguen siendo enum estático) ──────────────────────
+// ─── Tipos de plato ─────────────────────────────────────────────────────────
 
-export const DISH_CATEGORY_LABELS: Record<DishCategory, string> = {
-  PASTA: "Pasta",
-  ARROZ: "Arroz",
-  CARNE: "Carne",
-  PESCADO: "Pescado",
-  LEGUMBRES: "Legumbres",
-  HUEVOS: "Huevos",
-  OTRO: "Otro",
+export const DISH_TYPE_LABELS: Record<DishType, string> = {
+  COMIDA: "Comidas",
+  CENA: "Cenas",
+  MIXTO: "Mixtos",
+  ACOMPANANTE: "Acompañantes",
 };
 
-export const DISH_CATEGORY_EMOJIS: Record<DishCategory, string> = {
-  CARNE: "🥩",
-  PESCADO: "🐟",
-  PASTA: "🍝",
-  ARROZ: "🍚",
-  LEGUMBRES: "🫘",
-  HUEVOS: "🥚",
-  OTRO: "🍽️",
+export const DISH_TYPE_EMOJIS: Record<DishType, string> = {
+  COMIDA: "☀️",
+  CENA: "🌙",
+  MIXTO: "🍽️",
+  ACOMPANANTE: "🥗",
 };
 
-export const DISH_CATEGORY_ORDER: DishCategory[] = [
-  "CARNE",
-  "PESCADO",
-  "PASTA",
-  "ARROZ",
-  "LEGUMBRES",
-  "HUEVOS",
-  "OTRO",
+export const DISH_TYPE_ORDER: DishType[] = [
+  "COMIDA",
+  "CENA",
+  "MIXTO",
+  "ACOMPANANTE",
 ];
 
-// ─── Plan semanal ─────────────────────────────────────────────────────────────
+// ─── Plan semanal ─────────────────────────────────────────────────────────
 
 export const DAY_LABELS: Record<DayOfWeek, string> = {
   LUNES: "Lunes",

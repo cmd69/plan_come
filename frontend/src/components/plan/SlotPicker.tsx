@@ -3,35 +3,39 @@
 import { useState } from "react";
 import { X, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { Dish } from "@prisma/client";
-import {
-  DISH_CATEGORY_LABELS,
-  DISH_CATEGORY_EMOJIS,
-  DISH_CATEGORY_ORDER,
-} from "@/lib/constants";
+import type { Dish, MealType } from "@prisma/client";
+import { DISH_TYPE_LABELS, DISH_TYPE_EMOJIS } from "@/lib/constants";
 
 interface SlotPickerProps {
   dishes: Dish[];
+  meal: MealType;
   onSelect: (dishId: number | null) => void;
   onClose: () => void;
 }
 
-export default function SlotPicker({ dishes, onSelect, onClose }: SlotPickerProps) {
+export default function SlotPicker({ dishes, meal, onSelect, onClose }: SlotPickerProps) {
   const [search, setSearch] = useState("");
 
-  // Only show main dishes (not sides) in slot picker
-  const mainDishes = dishes.filter((d) => !d.isSide);
+  // Show dishes that match this meal: COMIDA+MIXTO for lunch, CENA+MIXTO for dinner
+  const mainDishes = dishes.filter((d) =>
+    d.type === "MIXTO" || d.type === meal
+  );
   const filtered = search.trim()
     ? mainDishes.filter((d) =>
         d.name.toLowerCase().includes(search.trim().toLowerCase())
       )
     : mainDishes;
 
-  const grouped = DISH_CATEGORY_ORDER.map((cat) => ({
-    category: cat,
-    label: DISH_CATEGORY_LABELS[cat],
-    emoji: DISH_CATEGORY_EMOJIS[cat],
-    dishes: filtered.filter((d) => d.category === cat),
+  // Group by type: show specific type first, then MIXTO
+  const typeOrder = meal === "COMIDA"
+    ? (["COMIDA", "MIXTO"] as const)
+    : (["CENA", "MIXTO"] as const);
+
+  const grouped = typeOrder.map((type) => ({
+    type,
+    label: DISH_TYPE_LABELS[type],
+    emoji: DISH_TYPE_EMOJIS[type],
+    dishes: filtered.filter((d) => d.type === type),
   })).filter((g) => g.dishes.length > 0);
 
   return (
@@ -80,18 +84,18 @@ export default function SlotPicker({ dishes, onSelect, onClose }: SlotPickerProp
               No se encontraron platos
             </p>
           ) : (
-            grouped.map(({ category, label, emoji, dishes: catDishes }) => (
-              <div key={category} className="mb-3">
+            grouped.map(({ type, label, emoji, dishes: typeDishes }) => (
+              <div key={type} className="mb-3">
                 <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-1.5 flex items-center gap-1">
                   <span>{emoji}</span> {label}
                 </p>
-                {catDishes.map((dish) => (
+                {typeDishes.map((dish) => (
                   <button
                     key={dish.id}
                     onClick={() => onSelect(dish.id)}
                     className="w-full text-left px-3 py-3 rounded-xl text-sm font-medium text-gray-800 active:bg-emerald-50 active:text-emerald-700 flex items-center gap-2"
                   >
-                    <span>{emoji}</span>
+                    <span>{dish.emoji || "🍽️"}</span>
                     <span className="flex-1">{dish.name}</span>
                     {!dish.active && (
                       <span className="text-[10px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full">

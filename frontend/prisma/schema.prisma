@@ -9,14 +9,11 @@ datasource db {
 
 // ─── Enums ────────────────────────────────────────────────────────────────────
 
-enum DishCategory {
-  PASTA
-  ARROZ
-  CARNE
-  PESCADO
-  LEGUMBRES
-  HUEVOS
-  OTRO
+enum DishType {
+  COMIDA
+  CENA
+  MIXTO
+  ACOMPANANTE
 }
 
 // ProductCategory eliminado — ahora dinámico en tabla Category
@@ -66,13 +63,13 @@ model Product {
 // ─── Catálogo de platos ───────────────────────────────────────────────────────
 
 model Dish {
-  id        Int          @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   name      String
-  category  DishCategory
+  type      DishType @default(MIXTO)
+  emoji     String?
   notes     String?
-  active    Boolean      @default(true)
-  isSide    Boolean      @default(false)
-  createdAt DateTime     @default(now())
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
 
   planSlots   PlanSlot[]
   ingredients DishIngredient[]
@@ -81,15 +78,15 @@ model Dish {
 }
 
 // Acompañante de un plato: enlaza un plato principal con un plato acompañante.
-// group=null → acompañante fijo (siempre se sirve con el plato)
-// group="A" → alternativa dentro del grupo (se elige 1 del grupo)
+// Siempre en grupos: group="A" → alternativa dentro del grupo (groupMin del grupo debe estar disponible)
 model DishSide {
-  id      Int     @id @default(autoincrement())
-  dishId  Int
-  dish    Dish    @relation("DishSides", fields: [dishId], references: [id], onDelete: Cascade)
-  sideId  Int
-  side    Dish    @relation("SideOf", fields: [sideId], references: [id], onDelete: Cascade)
-  group   String?
+  id       Int     @id @default(autoincrement())
+  dishId   Int
+  dish     Dish    @relation("DishSides", fields: [dishId], references: [id], onDelete: Cascade)
+  sideId   Int
+  side     Dish    @relation("SideOf", fields: [sideId], references: [id], onDelete: Cascade)
+  group    String?
+  groupMin Int     @default(1)
 
   @@unique([dishId, sideId])
 }
@@ -107,6 +104,7 @@ model DishIngredient {
   quantity  Int     @default(1)
   optional  Boolean @default(false)
   group     String?
+  groupMin  Int     @default(1)
 
   @@unique([dishId, productId])
 }

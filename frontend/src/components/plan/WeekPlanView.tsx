@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { ChevronLeft, ChevronRight, Sparkles, Trash2, Loader2 } from "lucide-react";
 import type { Dish, DayOfWeek, MealType, PlanSlot, WeekPlan } from "@prisma/client";
-import { DAY_LABELS, DAY_ORDER, MEAL_ORDER, DISH_CATEGORY_EMOJIS } from "@/lib/constants";
+import { DAY_LABELS, DAY_ORDER, MEAL_ORDER } from "@/lib/constants";
 import { generateWeekPlan, clearWeekPlan, loadWeekPlan } from "@/actions/plan";
 import { cn } from "@/lib/utils";
 import PlanSlotCard from "./PlanSlotCard";

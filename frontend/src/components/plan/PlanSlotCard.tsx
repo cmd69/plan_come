@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { RefreshCw, UtensilsCrossed } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Dish, DayOfWeek, MealType } from "@prisma/client";
-import { MEAL_LABELS, MEAL_EMOJIS, DISH_CATEGORY_EMOJIS } from "@/lib/constants";
+import { MEAL_LABELS, MEAL_EMOJIS } from "@/lib/constants";
 import { setSlotDish, toggleEatenOut, regenerateSlot } from "@/actions/plan";
 import SlotPicker from "./SlotPicker";
 
@@ -83,7 +83,7 @@ export default function PlanSlotCard({
           {eatenOut ? (
             "Fuera de casa"
           ) : dish ? (
-            <><span>{DISH_CATEGORY_EMOJIS[dish.category]}</span> {dish.name}</>
+            <><span>{dish.emoji || "🍽️"}</span> {dish.name}</>
           ) : (
             <span className="italic">Sin plato</span>
           )}
@@ -116,6 +116,7 @@ export default function PlanSlotCard({
       {showPicker && (
         <SlotPicker
           dishes={allDishes}
+          meal={meal}
           onSelect={handleSelectDish}
           onClose={() => setShowPicker(false)}
         />
