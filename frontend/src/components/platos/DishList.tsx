@@ -6,6 +6,7 @@ import type { Product, Category } from "@prisma/client";
 import { DISH_TYPE_LABELS, DISH_TYPE_EMOJIS, DISH_TYPE_ORDER } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import DishCard, { type DishFull } from "./DishCard";
+import DishDetailSheet from "./DishDetailSheet";
 import DishForm from "./DishForm";
 import type { DishType } from "@prisma/client";
 
@@ -18,6 +19,7 @@ interface DishListProps {
 export default function DishList({ dishes, products, categories }: DishListProps) {
   const [formDish, setFormDish] = useState<DishFull | null | undefined>(undefined);
   const [formType, setFormType] = useState<DishType | undefined>(undefined);
+  const [detailDish, setDetailDish] = useState<DishFull | null>(null);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const [view, setView] = useState<"grid" | "list">("grid");
 
@@ -161,7 +163,7 @@ export default function DishList({ dishes, products, categories }: DishListProps
                           return (
                             <button
                               key={dish.id}
-                              onClick={() => setFormDish(dish)}
+                              onClick={() => setDetailDish(dish)}
                               className={cn(
                                 "relative flex flex-col items-center justify-center gap-1 p-3 rounded-xl border-2 aspect-square transition-colors",
                                 !dish.active
@@ -212,6 +214,14 @@ export default function DishList({ dishes, products, categories }: DishListProps
         >
           <Plus size={26} strokeWidth={2.5} />
         </button>
+      )}
+
+      {detailDish && (
+        <DishDetailSheet
+          dish={detailDish}
+          onEdit={() => { setDetailDish(null); setFormDish(detailDish); }}
+          onClose={() => setDetailDish(null)}
+        />
       )}
 
       {formDish !== undefined && (
