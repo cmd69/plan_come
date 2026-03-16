@@ -4,7 +4,7 @@ import { useState, useMemo, useTransition } from "react";
 import { Check, Plus, Minus, X, ShoppingCart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Product, Category, ShoppingSession, ShoppingSessionItem } from "@prisma/client";
-import { buildCategoryMaps } from "@/lib/constants";
+import { buildCategoryMaps, PRIORITY_LABELS } from "@/lib/constants";
 import { toggleItem, updateItemQuantity, completeSession, cancelSession } from "@/actions/shopping";
 
 type SessionWithItems = ShoppingSession & {
@@ -49,6 +49,7 @@ export default function ShoppingMode({ session, categories, onAddMore }: Shoppin
         emoji: emojis[slug] ?? "📦",
         items: catMap.get(slug)!.sort((a, b) => {
           if (a.checked !== b.checked) return a.checked ? 1 : -1;
+          if (a.product.priority !== b.product.priority) return b.product.priority - a.product.priority;
           return a.product.name.localeCompare(b.product.name, "es");
         }),
       }));
@@ -150,6 +151,16 @@ export default function ShoppingMode({ session, categories, onAddMore }: Shoppin
                   >
                     {item.checked && <Check size={16} strokeWidth={3} />}
                   </button>
+
+                  {/* Priority indicator */}
+                  {item.product.priority > 0 && !item.checked && (
+                    <span className={cn(
+                      "text-[9px] font-bold uppercase tracking-wide shrink-0",
+                      item.product.priority === 2 ? "text-red-500" : "text-amber-500"
+                    )}>
+                      {item.product.priority === 2 ? "!!!" : "!!"}
+                    </span>
+                  )}
 
                   {/* Product info */}
                   <div className="flex-1 min-w-0">

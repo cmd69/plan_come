@@ -23,6 +23,9 @@ const SORT_OPTIONS: { key: SortKey; label: string; iconAsc: typeof ArrowDownAZ; 
 
 function sortProducts(products: Product[], key: SortKey, dir: SortDir): Product[] {
   const sorted = [...products].sort((a, b) => {
+    // Primary: priority desc (alta first)
+    if (a.priority !== b.priority) return b.priority - a.priority;
+    // Secondary: selected sort key
     switch (key) {
       case "alpha":
         return a.name.localeCompare(b.name, "es");

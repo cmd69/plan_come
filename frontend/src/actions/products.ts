@@ -7,10 +7,11 @@ export async function createProduct(formData: FormData) {
   const name = (formData.get("name") as string)?.trim();
   const category = (formData.get("category") as string)?.trim();
   const icon = (formData.get("icon") as string)?.trim() || null;
+  const priority = parseInt(formData.get("priority") as string) || 0;
 
   if (!name || !category) return;
 
-  await prisma.product.create({ data: { name, icon, category } });
+  await prisma.product.create({ data: { name, icon, category, priority } });
   revalidatePath("/inventario");
 }
 
@@ -18,10 +19,11 @@ export async function updateProduct(id: number, formData: FormData) {
   const name = (formData.get("name") as string)?.trim();
   const category = (formData.get("category") as string)?.trim();
   const icon = (formData.get("icon") as string)?.trim() || null;
+  const priority = parseInt(formData.get("priority") as string) || 0;
 
   if (!name || !category) return;
 
-  await prisma.product.update({ where: { id }, data: { name, icon, category } });
+  await prisma.product.update({ where: { id }, data: { name, icon, category, priority } });
   revalidatePath("/inventario");
 }
 

@@ -1,10 +1,11 @@
 "use client";
 
-import { useTransition, useRef, useEffect } from "react";
+import { useState, useTransition, useRef, useEffect } from "react";
 import { X } from "lucide-react";
 import { createProduct, updateProduct } from "@/actions/products";
 import type { Product, Category } from "@prisma/client";
 import { cn } from "@/lib/utils";
+import { PRIORITY_LABELS, PRIORITY_BG } from "@/lib/constants";
 
 interface ProductFormProps {
   product?: Product | null;
@@ -15,6 +16,7 @@ interface ProductFormProps {
 
 export default function ProductForm({ product, categories, defaultCategory, onClose }: ProductFormProps) {
   const [isPending, startTransition] = useTransition();
+  const [priority, setPriority] = useState(product?.priority ?? 0);
   const firstInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -100,6 +102,29 @@ export default function ProductForm({ product, categories, defaultCategory, onCl
                 </option>
               ))}
             </select>
+          </div>
+
+          {/* Prioridad */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-gray-700">Prioridad</label>
+            <input type="hidden" name="priority" value={priority} />
+            <div className="flex gap-2">
+              {[0, 1, 2].map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => setPriority(p)}
+                  className={cn(
+                    "flex-1 h-10 rounded-xl text-sm font-medium transition-colors border",
+                    priority === p
+                      ? PRIORITY_BG[p] + " border-current"
+                      : "bg-gray-50 text-gray-400 border-gray-200 active:bg-gray-100"
+                  )}
+                >
+                  {PRIORITY_LABELS[p]}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Botones */}

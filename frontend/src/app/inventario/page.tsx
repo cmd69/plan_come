@@ -9,7 +9,7 @@ export default async function InventarioPage({
 }) {
   const [products, categories, params] = await Promise.all([
     prisma.product.findMany({
-      orderBy: [{ category: "asc" }, { name: "asc" }],
+      orderBy: [{ category: "asc" }, { priority: "desc" }, { name: "asc" }],
     }),
     getCategories(),
     searchParams,

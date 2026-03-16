@@ -1,6 +1,34 @@
 import { DishType, DayOfWeek, MealType } from "@prisma/client";
 import type { Category } from "@prisma/client";
 
+// ─── Prioridad de productos ──────────────────────────────────────────────────
+
+export const PRIORITY_LABELS: Record<number, string> = {
+  0: "Baja",
+  1: "Media",
+  2: "Alta",
+};
+
+export const PRIORITY_COLORS: Record<number, string> = {
+  0: "text-gray-400",
+  1: "text-amber-500",
+  2: "text-red-500",
+};
+
+export const PRIORITY_BG: Record<number, string> = {
+  0: "bg-gray-100 text-gray-500",
+  1: "bg-amber-50 text-amber-600",
+  2: "bg-red-50 text-red-600",
+};
+
+/** Sort products by priority desc, then name asc */
+export function sortByPriority<T extends { priority: number; name: string }>(items: T[]): T[] {
+  return [...items].sort((a, b) => {
+    if (a.priority !== b.priority) return b.priority - a.priority;
+    return a.name.localeCompare(b.name, "es");
+  });
+}
+
 // ─── Tipo exportable para categorías dinámicas ───────────────────────────────
 
 export type CategoryInfo = Pick<Category, "slug" | "label" | "emoji">;

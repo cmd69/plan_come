@@ -4,7 +4,7 @@ import { useState, useMemo, useTransition } from "react";
 import { ChevronLeft, ShoppingCart, Check, Undo2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Product, Category } from "@prisma/client";
-import { buildCategoryMaps } from "@/lib/constants";
+import { buildCategoryMaps, sortByPriority } from "@/lib/constants";
 import { createSession, addItemsToSession } from "@/actions/shopping";
 
 interface ShoppingPrepareProps {
@@ -38,7 +38,7 @@ export default function ShoppingPrepare({
   );
 
   const categoryProducts = activeCategory
-    ? products.filter((p) => p.category === activeCategory)
+    ? sortByPriority(products.filter((p) => p.category === activeCategory))
     : [];
 
   function toggleProduct(productId: number) {
@@ -153,11 +153,16 @@ export default function ShoppingPrepare({
                         </span>
                       )}
 
-                      {/* "en lista" label for existing session items */}
-                      {inSession && (
+                      {/* Priority dot / "en lista" label */}
+                      {inSession ? (
                         <span className="absolute top-1.5 left-1.5 text-[8px] text-emerald-500 font-bold uppercase">
                           lista
                         </span>
+                      ) : product.priority > 0 && (
+                        <span className={cn(
+                          "absolute top-1.5 left-1.5 w-2 h-2 rounded-full",
+                          product.priority === 2 ? "bg-red-400" : "bg-amber-400"
+                        )} />
                       )}
 
                       <span className="text-2xl leading-none mt-1">

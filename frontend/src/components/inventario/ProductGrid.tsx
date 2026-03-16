@@ -4,7 +4,7 @@ import { useState, useMemo, useTransition, useRef } from "react";
 import { ChevronLeft, Minus, Plus, Pencil, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Product, Category } from "@prisma/client";
-import { buildCategoryMaps } from "@/lib/constants";
+import { buildCategoryMaps, sortByPriority, PRIORITY_COLORS } from "@/lib/constants";
 import { updateUnits, deleteProduct } from "@/actions/products";
 
 interface ProductGridProps {
@@ -27,7 +27,7 @@ export default function ProductGrid({ products, categories, initialCategory, onE
   );
 
   const categoryProducts = activeCategory
-    ? products.filter((p) => p.category === activeCategory)
+    ? sortByPriority(products.filter((p) => p.category === activeCategory))
     : [];
 
   return (
@@ -132,6 +132,12 @@ function ProductGridTile({
           : "border-gray-200 bg-white"
       )}
     >
+      {product.priority > 0 && (
+        <span className={cn(
+          "absolute top-1.5 left-1.5 w-2 h-2 rounded-full",
+          product.priority === 2 ? "bg-red-400" : "bg-amber-400"
+        )} />
+      )}
       <div className="absolute top-1 right-1 flex">
         <button
           onClick={() => onEdit(product)}

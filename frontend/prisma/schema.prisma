@@ -54,6 +54,7 @@ model Product {
   icon      String?
   category  String
   units     Int      @default(0)
+  priority  Int      @default(0) // 0=baja, 1=media, 2=alta
   createdAt DateTime @default(now())
 
   dishIngredients      DishIngredient[]

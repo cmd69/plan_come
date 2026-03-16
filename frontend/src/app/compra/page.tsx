@@ -6,7 +6,7 @@ import ShoppingView from "@/components/compra/ShoppingView";
 export default async function CompraPage() {
   const [products, categories, activeSession] = await Promise.all([
     prisma.product.findMany({
-      orderBy: [{ category: "asc" }, { name: "asc" }],
+      orderBy: [{ category: "asc" }, { priority: "desc" }, { name: "asc" }],
     }),
     getCategories(),
     getActiveSession(),
