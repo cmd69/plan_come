@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { Plus, ChevronDown, ArrowDownAZ, ArrowUpAZ, ArrowDown01, ArrowUp10, SmilePlus, Smile, List, LayoutGrid } from "lucide-react";
+import { useState, useMemo, useTransition } from "react";
+import { Plus, ChevronDown, ArrowDownAZ, ArrowUpAZ, ArrowDown01, ArrowUp10, SmilePlus, Smile, List, LayoutGrid, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Product, Category } from "@prisma/client";
 import { buildCategoryMaps } from "@/lib/constants";
@@ -9,6 +9,7 @@ import ProductCard from "./ProductCard";
 import ProductForm from "./ProductForm";
 import ImportProducts from "./ImportProducts";
 import ProductGrid from "./ProductGrid";
+import { resetAllUnits } from "@/actions/products";
 
 type SortKey = "alpha" | "icon" | "units";
 type SortDir = "asc" | "desc";
@@ -50,6 +51,8 @@ export default function ProductList({ products, categories, initialCategory }: P
   const [sortDir, setSortDir] = useState<SortDir>("asc");
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
   const { labels, emojis, order } = useMemo(
     () => buildCategoryMaps(categories),
@@ -100,6 +103,13 @@ export default function ProductList({ products, categories, initialCategory }: P
         <h1 className="text-xl font-bold text-gray-900">Inventario</h1>
         {!isEmpty && (
           <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => setShowResetConfirm(true)}
+              className="flex items-center justify-center w-8 h-8 text-gray-500 bg-gray-100 rounded-lg active:bg-gray-200"
+              title="Poner todo a 0"
+            >
+              <RotateCcw size={15} />
+            </button>
             <button
               onClick={() => setViewMode((v) => (v === "list" ? "grid" : "list"))}
               className="flex items-center justify-center w-8 h-8 text-gray-500 bg-gray-100 rounded-lg active:bg-gray-200"
@@ -243,6 +253,44 @@ export default function ProductList({ products, categories, initialCategory }: P
           defaultCategory={defaultCategory}
           onClose={() => { setFormProduct(undefined); setDefaultCategory(undefined); }}
         />
+      )}
+
+      {/* Reset confirm */}
+      {showResetConfirm && (
+        <>
+          <div className="fixed inset-0 bg-black/40 z-[70]" onClick={() => setShowResetConfirm(false)} />
+          <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl z-[80] px-4 pt-6 pb-8">
+            <p className="text-base font-semibold text-gray-900 text-center mb-2">
+              Poner todo a 0
+            </p>
+            <p className="text-sm text-gray-500 text-center mb-6">
+              Se pondrán las unidades de todos los productos a 0
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowResetConfirm(false)}
+                className="flex-1 h-12 rounded-xl border border-gray-200 text-gray-600 font-medium text-base active:bg-gray-50"
+              >
+                Cancelar
+              </button>
+              <button
+                disabled={isPending}
+                onClick={() => {
+                  startTransition(async () => {
+                    await resetAllUnits();
+                    setShowResetConfirm(false);
+                  });
+                }}
+                className={cn(
+                  "flex-1 h-12 rounded-xl font-semibold text-base text-white",
+                  isPending ? "bg-red-400" : "bg-red-600 active:bg-red-700"
+                )}
+              >
+                {isPending ? "Reseteando…" : "Confirmar"}
+              </button>
+            </div>
+          </div>
+        </>
       )}
     </>
   );

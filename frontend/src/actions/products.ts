@@ -36,6 +36,11 @@ export async function updateUnits(id: number, delta: number) {
   revalidatePath("/inventario");
 }
 
+export async function resetAllUnits() {
+  await prisma.product.updateMany({ data: { units: 0 } });
+  revalidatePath("/inventario");
+}
+
 export async function deleteProduct(id: number) {
   await prisma.shoppingSessionItem.deleteMany({ where: { productId: id } });
   await prisma.product.delete({ where: { id } });
