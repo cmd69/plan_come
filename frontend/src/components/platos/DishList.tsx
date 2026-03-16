@@ -76,15 +76,17 @@ export default function DishList({ dishes, products, categories }: DishListProps
   return (
     <>
       {/* Header con toggle de vista */}
-      <header className="sticky top-0 bg-white border-b border-gray-200 px-4 py-4 z-10 flex items-center justify-between">
-        <h1 className="text-xl font-bold text-gray-900">Platos</h1>
+      <header className="sticky top-0 bg-surface border-b border-border-default px-4 py-4 z-10 flex items-center justify-between">
+        <h1 className="text-xl font-bold text-primary">
+          <span className="mr-1.5">🍽️</span>Platos
+        </h1>
         {!isEmpty && (
           <div className="flex items-center gap-1">
             <button
               onClick={() => setView("grid")}
               className={cn(
                 "w-8 h-8 flex items-center justify-center rounded-lg transition-colors",
-                view === "grid" ? "bg-gray-900 text-white" : "text-gray-400 active:text-gray-600"
+                view === "grid" ? "bg-primary text-inverted" : "text-faint active:text-tertiary"
               )}
             >
               <Grid3X3 size={16} />
@@ -93,7 +95,7 @@ export default function DishList({ dishes, products, categories }: DishListProps
               onClick={() => setView("list")}
               className={cn(
                 "w-8 h-8 flex items-center justify-center rounded-lg transition-colors",
-                view === "list" ? "bg-gray-900 text-white" : "text-gray-400 active:text-gray-600"
+                view === "list" ? "bg-primary text-inverted" : "text-faint active:text-tertiary"
               )}
             >
               <List size={16} />
@@ -103,12 +105,12 @@ export default function DishList({ dishes, products, categories }: DishListProps
       </header>
 
       {isEmpty ? (
-        <div className="flex flex-col items-center justify-center py-20 text-gray-400 gap-3">
+        <div className="flex flex-col items-center justify-center py-20 text-faint gap-3">
           <span className="text-4xl">🍽️</span>
           <p className="text-base">No hay platos todavía</p>
           <button
             onClick={() => openNewDish()}
-            className="mt-2 px-5 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-xl active:bg-emerald-700"
+            className="mt-2 px-5 py-2.5 bg-accent text-inverted text-sm font-semibold rounded-xl active:bg-accent-hover"
           >
             Añadir el primero
           </button>
@@ -126,14 +128,14 @@ export default function DishList({ dishes, products, categories }: DishListProps
                     <button
                       onClick={() => toggleSection(type)}
                       className={cn(
-                        "w-full px-4 py-2.5 text-xs font-semibold uppercase tracking-wider bg-gray-50 border-b border-gray-100 flex items-center gap-1.5 active:bg-gray-100",
-                        type === "ACOMPANANTE" ? "text-orange-600" : "text-gray-500"
+                        "w-full px-4 py-2.5 text-xs font-semibold uppercase tracking-wider bg-surface-alt border-b border-border-subtle flex items-center gap-1.5 active:bg-pressed",
+                        type === "ACOMPANANTE" ? "text-orange-600" : "text-muted"
                       )}
                     >
                       <ChevronDown size={14} className={cn("transition-transform duration-200 shrink-0", isCollapsed && "-rotate-90")} />
                       <span>{emoji}</span>
                       <span className="flex-1 text-left">{label}</span>
-                      <span className="text-gray-400 normal-case font-normal tracking-normal">{typeDishes.length}</span>
+                      <span className="text-faint normal-case font-normal tracking-normal">{typeDishes.length}</span>
                     </button>
                     {!isCollapsed && typeDishes.map((dish) => (
                       <DishCard key={dish.id} dish={dish} onEdit={(d) => setFormDish(d)} />
@@ -153,14 +155,14 @@ export default function DishList({ dishes, products, categories }: DishListProps
                     <button
                       onClick={() => toggleSection(type)}
                       className={cn(
-                        "w-full px-4 py-2.5 text-xs font-semibold uppercase tracking-wider bg-gray-50 border-b border-gray-100 flex items-center gap-1.5 active:bg-gray-100",
-                        type === "ACOMPANANTE" ? "text-orange-600" : "text-gray-500"
+                        "w-full px-4 py-2.5 text-xs font-semibold uppercase tracking-wider bg-surface-alt border-b border-border-subtle flex items-center gap-1.5 active:bg-pressed",
+                        type === "ACOMPANANTE" ? "text-orange-600" : "text-muted"
                       )}
                     >
                       <ChevronDown size={14} className={cn("transition-transform duration-200 shrink-0", isCollapsed && "-rotate-90")} />
                       <span>{DISH_TYPE_EMOJIS[type]}</span>
                       <span className="flex-1 text-left">{DISH_TYPE_LABELS[type]}</span>
-                      <span className="text-gray-400 normal-case font-normal tracking-normal">{typeDishes.length}</span>
+                      <span className="text-faint normal-case font-normal tracking-normal">{typeDishes.length}</span>
                     </button>
                     {!isCollapsed && (
                       <div className="grid grid-cols-3 gap-2.5 p-3">
@@ -174,21 +176,21 @@ export default function DishList({ dishes, products, categories }: DishListProps
                               className={cn(
                                 "relative flex flex-col items-center justify-center gap-1 p-3 rounded-xl border-2 aspect-square transition-colors",
                                 !dish.active
-                                  ? "border-gray-200 bg-gray-50 opacity-50"
-                                  : "border-gray-200 bg-white active:bg-gray-50"
+                                  ? "border-border-default bg-surface-alt opacity-50"
+                                  : "border-border-default bg-surface active:bg-surface-alt"
                               )}
                             >
                               {/* Availability dot */}
                               {hasIngredients && (
                                 <span className={cn(
                                   "absolute top-1.5 right-1.5 w-2 h-2 rounded-full",
-                                  available ? "bg-emerald-400" : "bg-red-400"
+                                  available ? "bg-accent" : "bg-danger"
                                 )} />
                               )}
                               <span className="text-2xl leading-none">{dish.emoji || "🍽️"}</span>
                               <span className={cn(
                                 "text-[11px] font-medium text-center leading-tight line-clamp-2",
-                                dish.active ? "text-gray-700" : "text-gray-400 line-through"
+                                dish.active ? "text-secondary" : "text-faint line-through"
                               )}>
                                 {dish.name}
                               </span>
@@ -198,7 +200,7 @@ export default function DishList({ dishes, products, categories }: DishListProps
                         {/* Add new dish card */}
                         <button
                           onClick={() => openNewDish(type)}
-                          className="flex flex-col items-center justify-center gap-1 p-3 rounded-xl border-2 border-dashed border-gray-300 aspect-square text-gray-400 active:bg-gray-50"
+                          className="flex flex-col items-center justify-center gap-1 p-3 rounded-xl border-2 border-dashed border-border-strong aspect-square text-faint active:bg-surface-alt"
                         >
                           <Plus size={20} />
                           <span className="text-[10px] font-medium">Añadir</span>
@@ -216,7 +218,7 @@ export default function DishList({ dishes, products, categories }: DishListProps
       {!isEmpty && (
         <button
           onClick={() => openNewDish()}
-          className="fixed bottom-20 right-4 w-14 h-14 bg-emerald-600 text-white rounded-full shadow-lg flex items-center justify-center active:bg-emerald-700 transition-colors z-30"
+          className="fixed bottom-20 right-4 w-14 h-14 bg-accent text-inverted rounded-full shadow-lg flex items-center justify-center active:bg-accent-hover transition-colors z-30"
           aria-label="Añadir plato"
         >
           <Plus size={26} strokeWidth={2.5} />

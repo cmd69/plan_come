@@ -80,35 +80,35 @@ export default function ShoppingMode({ session, categories, onAddMore }: Shoppin
   return (
     <>
       {/* Header with progress */}
-      <header className="sticky top-0 bg-white border-b border-gray-200 z-10">
+      <header className="sticky top-0 bg-surface border-b border-border-default z-10">
         <div className="px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <ShoppingCart size={20} className="text-emerald-600" />
-            <h1 className="text-xl font-bold text-gray-900">Compra</h1>
+            <ShoppingCart size={20} className="text-accent-text" />
+            <h1 className="text-xl font-bold text-primary">Compra</h1>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold tabular-nums text-gray-600">
+            <span className="text-sm font-semibold tabular-nums text-tertiary">
               {checkedCount}/{totalCount}
             </span>
             <button
               onClick={onAddMore}
-              className="w-8 h-8 flex items-center justify-center text-gray-500 bg-gray-100 rounded-lg active:bg-gray-200"
+              className="w-8 h-8 flex items-center justify-center text-muted bg-pressed rounded-lg active:bg-pressed-strong"
               title="Añadir productos"
             >
               <Plus size={16} />
             </button>
             <button
               onClick={() => setShowCancelConfirm(true)}
-              className="w-8 h-8 flex items-center justify-center text-gray-400 active:text-gray-600"
+              className="w-8 h-8 flex items-center justify-center text-faint active:text-tertiary"
             >
               <X size={18} />
             </button>
           </div>
         </div>
         {/* Progress bar */}
-        <div className="h-1 bg-gray-100">
+        <div className="h-1 bg-pressed">
           <div
-            className="h-full bg-emerald-500 transition-all duration-300"
+            className="h-full bg-accent transition-all duration-300"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -122,12 +122,12 @@ export default function ShoppingMode({ session, categories, onAddMore }: Shoppin
           return (
             <section key={slug}>
               <div className={cn(
-                "px-4 py-2.5 text-xs font-bold uppercase tracking-wider bg-gray-50 border-b border-gray-100 flex items-center gap-1.5",
-                allChecked ? "text-gray-400" : "text-gray-600"
+                "px-4 py-2.5 text-xs font-bold uppercase tracking-wider bg-surface-alt border-b border-border-subtle flex items-center gap-1.5",
+                allChecked ? "text-faint" : "text-tertiary"
               )}>
                 <span>{emoji}</span>
                 <span className="flex-1">{label}</span>
-                <span className="text-gray-400 normal-case font-normal tracking-normal">
+                <span className="text-faint normal-case font-normal tracking-normal">
                   {catChecked}/{items.length}
                 </span>
               </div>
@@ -135,8 +135,8 @@ export default function ShoppingMode({ session, categories, onAddMore }: Shoppin
                 <div
                   key={item.id}
                   className={cn(
-                    "flex items-center gap-3 px-4 py-3.5 border-b border-gray-50 transition-colors",
-                    item.checked && "bg-gray-50/50"
+                    "flex items-center gap-3 px-4 py-3.5 border-b border-surface-alt transition-colors",
+                    item.checked && "bg-surface-alt/50"
                   )}
                 >
                   {/* Check button */}
@@ -145,8 +145,8 @@ export default function ShoppingMode({ session, categories, onAddMore }: Shoppin
                     className={cn(
                       "w-8 h-8 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors",
                       item.checked
-                        ? "bg-emerald-500 border-emerald-500 text-white"
-                        : "border-gray-300 active:border-emerald-400"
+                        ? "bg-accent border-accent text-inverted"
+                        : "border-border-strong active:border-accent"
                     )}
                   >
                     {item.checked && <Check size={16} strokeWidth={3} />}
@@ -168,8 +168,8 @@ export default function ShoppingMode({ session, categories, onAddMore }: Shoppin
                       className={cn(
                         "text-base font-medium",
                         item.checked
-                          ? "text-gray-400 line-through"
-                          : "text-gray-900"
+                          ? "text-faint line-through"
+                          : "text-primary"
                       )}
                     >
                       {item.product.icon && `${item.product.icon} `}
@@ -186,25 +186,25 @@ export default function ShoppingMode({ session, categories, onAddMore }: Shoppin
                         className={cn(
                           "w-7 h-7 flex items-center justify-center rounded-full border",
                           item.quantityToBuy <= 1
-                            ? "border-gray-200 text-gray-300"
-                            : "border-gray-300 text-gray-700 active:bg-gray-100"
+                            ? "border-border-default text-dimmed"
+                            : "border-border-strong text-secondary active:bg-pressed"
                         )}
                       >
                         <Minus size={12} />
                       </button>
-                      <span className="w-6 text-center text-sm font-bold tabular-nums text-gray-900">
+                      <span className="w-6 text-center text-sm font-bold tabular-nums text-primary">
                         {item.quantityToBuy}
                       </span>
                       <button
                         onClick={() => handleQuantity(item.id, 1, item.quantityToBuy)}
-                        className="w-7 h-7 flex items-center justify-center rounded-full border border-gray-300 text-gray-700 active:bg-gray-100"
+                        className="w-7 h-7 flex items-center justify-center rounded-full border border-border-strong text-secondary active:bg-pressed"
                       >
                         <Plus size={12} />
                       </button>
                     </div>
                   ) : (
-                    <span className="text-sm font-bold tabular-nums text-gray-400 px-1">
-                      ×{item.quantityToBuy}
+                    <span className="text-sm font-bold tabular-nums text-faint px-1">
+                      x{item.quantityToBuy}
                     </span>
                   )}
                 </div>
@@ -216,10 +216,10 @@ export default function ShoppingMode({ session, categories, onAddMore }: Shoppin
 
       {/* Finish button */}
       {checkedCount > 0 && (
-        <div className="fixed bottom-16 left-0 right-0 px-4 pb-4 pt-2 bg-gradient-to-t from-white via-white to-white/0 z-30">
+        <div className="fixed bottom-16 left-0 right-0 px-4 pb-4 pt-2 bg-gradient-to-t from-surface via-surface to-surface/0 z-30">
           <button
             onClick={() => setShowFinishConfirm(true)}
-            className="w-full h-14 rounded-2xl bg-emerald-600 shadow-lg flex items-center justify-center gap-2 text-white font-semibold text-base active:bg-emerald-700"
+            className="w-full h-14 rounded-2xl bg-accent shadow-lg flex items-center justify-center gap-2 text-inverted font-semibold text-base active:bg-accent-hover"
           >
             <Check size={20} />
             Finalizar compra
@@ -230,21 +230,21 @@ export default function ShoppingMode({ session, categories, onAddMore }: Shoppin
       {/* Finish confirm modal */}
       {showFinishConfirm && (
         <>
-          <div className="fixed inset-0 bg-black/40 z-[70]" onClick={() => setShowFinishConfirm(false)} />
-          <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl z-[80] px-4 pt-6 pb-8">
-            <p className="text-base font-semibold text-gray-900 text-center mb-2">
+          <div className="fixed inset-0 bg-overlay z-[70]" onClick={() => setShowFinishConfirm(false)} />
+          <div className="fixed bottom-0 left-0 right-0 bg-surface rounded-t-2xl z-[80] px-4 pt-6 pb-8">
+            <p className="text-base font-semibold text-primary text-center mb-2">
               Finalizar compra
             </p>
-            <p className="text-sm text-gray-500 text-center mb-1">
+            <p className="text-sm text-muted text-center mb-1">
               {checkedCount} de {totalCount} productos marcados.
             </p>
-            <p className="text-sm text-gray-500 text-center mb-6">
+            <p className="text-sm text-muted text-center mb-6">
               Se actualizará el inventario con los productos comprados.
             </p>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowFinishConfirm(false)}
-                className="flex-1 h-12 rounded-xl border border-gray-200 text-gray-600 font-medium text-base active:bg-gray-50"
+                className="flex-1 h-12 rounded-xl border border-border-default text-tertiary font-medium text-base active:bg-surface-alt"
               >
                 Cancelar
               </button>
@@ -252,8 +252,8 @@ export default function ShoppingMode({ session, categories, onAddMore }: Shoppin
                 disabled={isPending}
                 onClick={handleFinish}
                 className={cn(
-                  "flex-1 h-12 rounded-xl font-semibold text-base text-white",
-                  isPending ? "bg-emerald-400" : "bg-emerald-600 active:bg-emerald-700"
+                  "flex-1 h-12 rounded-xl font-semibold text-base text-inverted",
+                  isPending ? "bg-accent/70" : "bg-accent active:bg-accent-hover"
                 )}
               >
                 {isPending ? "Actualizando…" : "Confirmar"}
@@ -266,18 +266,18 @@ export default function ShoppingMode({ session, categories, onAddMore }: Shoppin
       {/* Cancel confirm modal */}
       {showCancelConfirm && (
         <>
-          <div className="fixed inset-0 bg-black/40 z-[70]" onClick={() => setShowCancelConfirm(false)} />
-          <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl z-[80] px-4 pt-6 pb-8">
-            <p className="text-base font-semibold text-gray-900 text-center mb-2">
+          <div className="fixed inset-0 bg-overlay z-[70]" onClick={() => setShowCancelConfirm(false)} />
+          <div className="fixed bottom-0 left-0 right-0 bg-surface rounded-t-2xl z-[80] px-4 pt-6 pb-8">
+            <p className="text-base font-semibold text-primary text-center mb-2">
               Descartar lista
             </p>
-            <p className="text-sm text-gray-500 text-center mb-6">
+            <p className="text-sm text-muted text-center mb-6">
               Se descartará la lista de la compra actual. El inventario no se modificará.
             </p>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowCancelConfirm(false)}
-                className="flex-1 h-12 rounded-xl border border-gray-200 text-gray-600 font-medium text-base active:bg-gray-50"
+                className="flex-1 h-12 rounded-xl border border-border-default text-tertiary font-medium text-base active:bg-surface-alt"
               >
                 Volver
               </button>
@@ -285,8 +285,8 @@ export default function ShoppingMode({ session, categories, onAddMore }: Shoppin
                 disabled={isPending}
                 onClick={handleCancel}
                 className={cn(
-                  "flex-1 h-12 rounded-xl font-semibold text-base text-white",
-                  isPending ? "bg-red-400" : "bg-red-600 active:bg-red-700"
+                  "flex-1 h-12 rounded-xl font-semibold text-base text-inverted",
+                  isPending ? "bg-danger/70" : "bg-danger active:bg-danger-hover"
                 )}
               >
                 {isPending ? "Descartando…" : "Descartar"}

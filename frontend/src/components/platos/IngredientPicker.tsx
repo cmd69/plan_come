@@ -62,29 +62,29 @@ export default function IngredientPicker({
     : [];
 
   const accent = accentColor ?? {
-    border: "border-emerald-500",
-    bg: "bg-emerald-50",
-    text: "text-emerald-700",
-    check: "bg-emerald-500",
+    border: "border-accent",
+    bg: "bg-accent-soft",
+    text: "text-accent-text",
+    check: "bg-accent",
   };
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/40 z-[70]" onClick={onClose} />
+      <div className="fixed inset-0 bg-overlay z-[70]" onClick={onClose} />
 
-      <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl z-[80] max-h-[85vh] flex flex-col">
+      <div className="fixed bottom-0 left-0 right-0 bg-elevated rounded-t-2xl z-[80] max-h-[85vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between px-4 pt-4 pb-2 shrink-0 border-b border-gray-100">
+        <div className="flex items-center justify-between px-4 pt-4 pb-2 shrink-0 border-b border-border-subtle">
           <div className="flex items-center gap-2">
             {activeCategory && (
               <button
                 onClick={() => setActiveCategory(null)}
-                className="w-8 h-8 flex items-center justify-center text-gray-500 active:text-gray-700"
+                className="w-8 h-8 flex items-center justify-center text-muted active:text-secondary"
               >
                 <ChevronLeft size={20} />
               </button>
             )}
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-semibold text-primary">
               {activeCategory
                 ? `${emojis[activeCategory] ?? "📦"} ${labels[activeCategory] ?? activeCategory}`
                 : title}
@@ -92,7 +92,7 @@ export default function IngredientPicker({
           </div>
           <button
             onClick={onClose}
-            className="w-9 h-9 flex items-center justify-center text-gray-400"
+            className="w-9 h-9 flex items-center justify-center text-faint"
           >
             <X size={20} />
           </button>
@@ -109,10 +109,10 @@ export default function IngredientPicker({
                   <button
                     key={slug}
                     onClick={() => setActiveCategory(slug)}
-                    className="relative flex flex-col items-center justify-center gap-1.5 p-4 rounded-2xl bg-gray-50 border border-gray-200 active:bg-gray-100 aspect-square"
+                    className="relative flex flex-col items-center justify-center gap-1.5 p-4 rounded-2xl bg-surface-alt border border-border-default active:bg-pressed aspect-square"
                   >
                     <span className="text-3xl">{emojis[slug] ?? "📦"}</span>
-                    <span className="text-xs font-medium text-gray-700 text-center leading-tight">
+                    <span className="text-xs font-medium text-secondary text-center leading-tight">
                       {labels[slug] ?? slug}
                     </span>
                     {catSelected > 0 && (
@@ -137,7 +137,7 @@ export default function IngredientPicker({
                       "relative flex flex-col items-center justify-center gap-1 p-3 rounded-xl border-2 aspect-square transition-colors",
                       sel
                         ? `${accent.border} ${accent.bg}`
-                        : "border-gray-200 bg-white active:bg-gray-50"
+                        : "border-border-default bg-surface active:bg-surface-alt"
                     )}
                   >
                     {sel && (
@@ -150,7 +150,7 @@ export default function IngredientPicker({
                     </span>
                     <span className={cn(
                       "text-[11px] font-medium text-center leading-tight line-clamp-2",
-                      sel ? "text-gray-900" : "text-gray-600"
+                      sel ? "text-primary" : "text-tertiary"
                     )}>
                       {product.name}
                     </span>
@@ -162,9 +162,9 @@ export default function IngredientPicker({
         </div>
 
         {/* Footer */}
-        <div className="shrink-0 border-t border-gray-100 px-4 py-3 flex items-center gap-3">
-          <div className="flex-1 text-sm text-gray-500">
-            <span className="font-semibold text-gray-700">{local.size}</span> seleccionados
+        <div className="shrink-0 border-t border-border-subtle px-4 py-3 flex items-center gap-3">
+          <div className="flex-1 text-sm text-muted">
+            <span className="font-semibold text-secondary">{local.size}</span> seleccionados
           </div>
           <button
             type="button"

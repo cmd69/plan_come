@@ -100,14 +100,16 @@ export default function WeekPlanView({ initialPlan, dishes }: WeekPlanViewProps)
   return (
     <>
       {/* Header */}
-      <header className="sticky top-0 bg-white border-b border-gray-200 z-10">
+      <header className="sticky top-0 bg-surface border-b border-border-default z-10">
         <div className="flex items-center justify-between px-4 py-3">
-          <h1 className="text-xl font-bold text-gray-900">Plan semanal</h1>
+          <h1 className="text-xl font-bold text-primary">
+            <span className="mr-1.5">📅</span>Plan semanal
+          </h1>
           <div className="flex items-center gap-1">
             {filledSlots > 0 && (
               <button
                 onClick={() => setShowClearConfirm(true)}
-                className="w-9 h-9 flex items-center justify-center text-gray-400 active:text-red-500"
+                className="w-9 h-9 flex items-center justify-center text-faint active:text-danger-text"
                 title="Limpiar plan"
               >
                 <Trash2 size={18} />
@@ -119,8 +121,8 @@ export default function WeekPlanView({ initialPlan, dishes }: WeekPlanViewProps)
               className={cn(
                 "flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold transition-colors",
                 isPending
-                  ? "bg-emerald-100 text-emerald-400"
-                  : "bg-emerald-600 text-white active:bg-emerald-700",
+                  ? "bg-accent-muted text-accent-text"
+                  : "bg-accent text-inverted active:bg-accent-hover",
                 activeDishes.length === 0 && "opacity-40"
               )}
             >
@@ -139,22 +141,22 @@ export default function WeekPlanView({ initialPlan, dishes }: WeekPlanViewProps)
           <button
             onClick={() => navigate(-1)}
             disabled={isPending}
-            className="w-9 h-9 flex items-center justify-center text-gray-500 active:text-gray-700"
+            className="w-9 h-9 flex items-center justify-center text-muted active:text-secondary"
           >
             <ChevronLeft size={20} />
           </button>
           <div className="text-center">
-            <p className="text-sm font-medium text-gray-800">
+            <p className="text-sm font-medium text-primary">
               {formatWeekRange(weekStart)}
             </p>
             {currentWeek && (
-              <p className="text-xs text-emerald-600 font-medium">Esta semana</p>
+              <p className="text-xs text-accent-text font-medium">Esta semana</p>
             )}
           </div>
           <button
             onClick={() => navigate(1)}
             disabled={isPending}
-            className="w-9 h-9 flex items-center justify-center text-gray-500 active:text-gray-700"
+            className="w-9 h-9 flex items-center justify-center text-muted active:text-secondary"
           >
             <ChevronRight size={20} />
           </button>
@@ -170,15 +172,15 @@ export default function WeekPlanView({ initialPlan, dishes }: WeekPlanViewProps)
               {/* Day header */}
               <div
                 className={cn(
-                  "px-4 py-2 text-sm font-bold uppercase tracking-wider border-b border-gray-100",
+                  "px-4 py-2 text-sm font-bold uppercase tracking-wider border-b border-border-subtle",
                   isToday
-                    ? "bg-emerald-50 text-emerald-700"
-                    : "bg-gray-50 text-gray-500"
+                    ? "bg-accent-soft text-accent-text"
+                    : "bg-surface-alt text-muted"
                 )}
               >
                 {DAY_LABELS[day]}
                 {isToday && (
-                  <span className="ml-2 text-xs font-medium normal-case tracking-normal text-emerald-500">
+                  <span className="ml-2 text-xs font-medium normal-case tracking-normal text-accent-text">
                     hoy
                   </span>
                 )}
@@ -208,7 +210,7 @@ export default function WeekPlanView({ initialPlan, dishes }: WeekPlanViewProps)
       {/* Empty state hint — only when no dishes exist */}
       {filledSlots === 0 && !isPending && activeDishes.length === 0 && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ top: 140 }}>
-          <div className="text-center text-gray-400 px-8">
+          <div className="text-center text-faint px-8">
             <p className="text-sm">Añade platos en el catálogo para poder generar un plan</p>
           </div>
         </div>
@@ -218,26 +220,26 @@ export default function WeekPlanView({ initialPlan, dishes }: WeekPlanViewProps)
       {showClearConfirm && (
         <>
           <div
-            className="fixed inset-0 bg-black/40 z-[70]"
+            className="fixed inset-0 bg-overlay z-[70]"
             onClick={() => setShowClearConfirm(false)}
           />
-          <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl z-[80] px-4 pt-6 pb-8">
-            <p className="text-base font-semibold text-gray-900 text-center mb-2">
+          <div className="fixed bottom-0 left-0 right-0 bg-surface rounded-t-2xl z-[80] px-4 pt-6 pb-8">
+            <p className="text-base font-semibold text-primary text-center mb-2">
               Limpiar plan
             </p>
-            <p className="text-sm text-gray-500 text-center mb-6">
+            <p className="text-sm text-muted text-center mb-6">
               Se borrarán todos los platos asignados esta semana
             </p>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowClearConfirm(false)}
-                className="flex-1 h-12 rounded-xl border border-gray-200 text-gray-600 font-medium text-base active:bg-gray-50"
+                className="flex-1 h-12 rounded-xl border border-border-default text-tertiary font-medium text-base active:bg-pressed"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleClear}
-                className="flex-1 h-12 rounded-xl bg-red-600 text-white font-semibold text-base active:bg-red-700"
+                className="flex-1 h-12 rounded-xl bg-danger text-inverted font-semibold text-base active:bg-danger-hover"
               >
                 Limpiar
               </button>

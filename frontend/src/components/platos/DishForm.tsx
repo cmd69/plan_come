@@ -20,10 +20,10 @@ const GROUP_COLORS: Record<string, { bg: string; text: string; border: string; b
 };
 
 const TYPE_STYLES: Record<DishType, { active: string; inactive: string }> = {
-  COMIDA: { active: "bg-yellow-100 border-yellow-400 text-yellow-800", inactive: "border-gray-200 text-gray-500" },
-  CENA: { active: "bg-indigo-100 border-indigo-400 text-indigo-800", inactive: "border-gray-200 text-gray-500" },
-  MIXTO: { active: "bg-emerald-100 border-emerald-400 text-emerald-800", inactive: "border-gray-200 text-gray-500" },
-  ACOMPANANTE: { active: "bg-orange-100 border-orange-400 text-orange-800", inactive: "border-gray-200 text-gray-500" },
+  COMIDA: { active: "bg-yellow-100 border-yellow-400 text-yellow-800", inactive: "border-border-default text-muted" },
+  CENA: { active: "bg-indigo-100 border-indigo-400 text-indigo-800", inactive: "border-border-default text-muted" },
+  MIXTO: { active: "bg-emerald-100 border-emerald-400 text-emerald-800", inactive: "border-border-default text-muted" },
+  ACOMPANANTE: { active: "bg-orange-100 border-orange-400 text-orange-800", inactive: "border-border-default text-muted" },
 };
 
 interface DishFormProps {
@@ -236,11 +236,11 @@ export default function DishForm({ dish, defaultType, allDishes, products, categ
         key={ing.productId}
         className={cn(
           "flex items-center gap-2 px-3 py-2 rounded-xl border",
-          colorClass ?? "border-gray-200 bg-gray-50"
+          colorClass ?? "border-border-default bg-input-bg"
         )}
       >
         <span className="text-lg leading-none">{product.icon || "📦"}</span>
-        <span className="flex-1 text-sm font-medium text-gray-800 truncate">
+        <span className="flex-1 text-sm font-medium text-primary truncate">
           {product.name}
         </span>
         <div className="flex items-center gap-1">
@@ -248,25 +248,25 @@ export default function DishForm({ dish, defaultType, allDishes, products, categ
             type="button"
             onClick={() => updateQuantity(product.id, -1)}
             disabled={ing.quantity <= 1}
-            className="w-6 h-6 flex items-center justify-center rounded-full border border-gray-300 text-gray-600 disabled:opacity-30"
-          >
-            <Minus size={12} />
-          </button>
-          <span className="w-5 text-center text-xs font-bold tabular-nums">
-            {ing.quantity}
-          </span>
-          <button
-            type="button"
-            onClick={() => updateQuantity(product.id, 1)}
-            className="w-6 h-6 flex items-center justify-center rounded-full border border-gray-300 text-gray-600"
-          >
+className="w-6 h-6 flex items-center justify-center rounded-full border border-border-strong text-tertiary disabled:opacity-30"
+            >
+              <Minus size={12} />
+            </button>
+            <span className="w-5 text-center text-xs font-bold tabular-nums">
+              {ing.quantity}
+            </span>
+            <button
+              type="button"
+              onClick={() => updateQuantity(product.id, 1)}
+              className="w-6 h-6 flex items-center justify-center rounded-full border border-border-strong text-tertiary"
+            >
             <Plus size={12} />
           </button>
         </div>
         <button
           type="button"
           onClick={() => removeIngredient(product.id)}
-          className="w-6 h-6 flex items-center justify-center text-gray-300 active:text-red-500"
+          className="w-6 h-6 flex items-center justify-center text-dimmed active:text-danger-text"
         >
           <X size={14} />
         </button>
@@ -298,14 +298,14 @@ export default function DishForm({ dish, defaultType, allDishes, products, categ
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/40 z-50" onClick={onClose} />
+      <div className="fixed inset-0 bg-overlay z-50" onClick={onClose} />
 
-      <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl z-[60] max-h-[90vh] flex flex-col">
+      <div className="fixed bottom-0 left-0 right-0 bg-surface rounded-t-2xl z-[60] max-h-[90vh] flex flex-col">
         <div className="flex items-center justify-between px-4 pt-4 pb-2 shrink-0">
-          <h2 className="text-lg font-semibold text-gray-900">
+          <h2 className="text-lg font-semibold text-primary">
             {dish ? "Editar plato" : "Nuevo plato"}
           </h2>
-          <button onClick={onClose} className="w-9 h-9 flex items-center justify-center text-gray-400">
+          <button onClick={onClose} className="w-9 h-9 flex items-center justify-center text-faint">
             <X size={20} />
           </button>
         </div>
@@ -314,7 +314,7 @@ export default function DishForm({ dish, defaultType, allDishes, products, categ
           {/* Nombre + Emoji */}
           <div className="flex gap-3">
             <div className="flex flex-col gap-1.5 flex-1">
-              <label className="text-sm font-medium text-gray-700">Nombre</label>
+              <label className="text-sm font-medium text-secondary">Nombre</label>
               <input
                 ref={firstInputRef}
                 name="name"
@@ -322,24 +322,24 @@ export default function DishForm({ dish, defaultType, allDishes, products, categ
                 defaultValue={dish?.name ?? ""}
                 required
                 placeholder="Ej: Pollo al horno"
-                className="h-12 px-3 rounded-xl border border-gray-200 bg-gray-50 text-base outline-none focus:border-emerald-500 focus:bg-white transition-colors"
+                className="h-12 px-3 rounded-xl border border-border-default bg-input-bg text-base outline-none focus:border-accent focus:bg-input-focus transition-colors"
               />
             </div>
             <div className="flex flex-col gap-1.5 w-16">
-              <label className="text-sm font-medium text-gray-700">Emoji</label>
+              <label className="text-sm font-medium text-secondary">Emoji</label>
               <input
                 type="text"
                 value={emoji}
                 onChange={(e) => setEmoji(e.target.value)}
                 placeholder="🍽️"
-                className="h-12 px-1 rounded-xl border border-gray-200 bg-gray-50 text-2xl text-center outline-none focus:border-emerald-500 focus:bg-white transition-colors"
+                className="h-12 px-1 rounded-xl border border-border-default bg-input-bg text-2xl text-center outline-none focus:border-accent focus:bg-input-focus transition-colors"
               />
             </div>
           </div>
 
           {/* Tipo de plato */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">Tipo</label>
+            <label className="text-sm font-medium text-secondary">Tipo</label>
             <div className="grid grid-cols-4 gap-2">
               {DISH_TYPE_ORDER.map((t) => {
                 const isActive = dishType === t;
@@ -367,24 +367,24 @@ export default function DishForm({ dish, defaultType, allDishes, products, categ
           {/* Base (obligatorios) */}
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-gray-700">Obligatorios</label>
+              <label className="text-sm font-medium text-secondary">Obligatorios</label>
               <button
                 type="button"
                 onClick={() => setPickerTarget({ type: "base" })}
-                className="w-7 h-7 flex items-center justify-center rounded-full bg-emerald-100 text-emerald-600 active:bg-emerald-200"
+                className="w-7 h-7 flex items-center justify-center rounded-full bg-accent-soft text-accent-text active:bg-accent-muted"
               >
                 <Plus size={14} />
               </button>
             </div>
-            {baseIngredients.map((ing) => renderIngredientChip(ing, "border-emerald-200 bg-emerald-50/50"))}
+            {baseIngredients.map((ing) => renderIngredientChip(ing, "border-accent-muted bg-accent-soft/50"))}
           </div>
 
           {/* Opcionales */}
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+              <label className="text-sm font-medium text-secondary flex items-center gap-1.5">
                 Opcionales
-                <span className="text-gray-400 font-normal text-xs">(no afectan disponibilidad)</span>
+                <span className="text-faint font-normal text-xs">(no afectan disponibilidad)</span>
               </label>
               <button
                 type="button"
@@ -408,13 +408,13 @@ export default function DishForm({ dish, defaultType, allDishes, products, categ
                   <span className={cn("text-xs font-bold px-2 py-0.5 rounded-full", colors?.bg, colors?.text)}>
                     Grupo {groupName}
                   </span>
-                  <span className="text-xs text-gray-400">mín.</span>
+                  <span className="text-xs text-faint">mín.</span>
                   <div className="flex items-center gap-1">
                     <button
                       type="button"
                       onClick={() => updateGroupMin(groupName, -1, false)}
                       disabled={min <= 1}
-                      className="w-5 h-5 flex items-center justify-center rounded-full border border-gray-300 text-gray-600 disabled:opacity-30"
+                      className="w-5 h-5 flex items-center justify-center rounded-full border border-border-strong text-tertiary disabled:opacity-30"
                     >
                       <Minus size={10} />
                     </button>
@@ -423,12 +423,12 @@ export default function DishForm({ dish, defaultType, allDishes, products, categ
                       type="button"
                       onClick={() => updateGroupMin(groupName, 1, false)}
                       disabled={min >= members.length}
-                      className="w-5 h-5 flex items-center justify-center rounded-full border border-gray-300 text-gray-600 disabled:opacity-30"
+                      className="w-5 h-5 flex items-center justify-center rounded-full border border-border-strong text-tertiary disabled:opacity-30"
                     >
                       <Plus size={10} />
                     </button>
                   </div>
-                  <span className="text-xs text-gray-400">de {members.length}</span>
+                  <span className="text-xs text-faint">de {members.length}</span>
                   <div className="flex-1" />
                   <button
                     type="button"
@@ -468,8 +468,8 @@ export default function DishForm({ dish, defaultType, allDishes, products, categ
           {/* ══════ ACOMPAÑANTES ══════ */}
           {dishType !== "ACOMPANANTE" && availableSides.length > 0 && (
             <>
-              <div className="border-t border-gray-100 pt-4 flex flex-col gap-3">
-                <label className="text-sm font-bold text-gray-700">Acompañantes</label>
+              <div className="border-t border-border-subtle pt-4 flex flex-col gap-3">
+                <label className="text-sm font-bold text-secondary">Acompañantes</label>
 
                 {/* Side groups */}
                 {usedSideGroups.map((groupName) => {
@@ -482,13 +482,13 @@ export default function DishForm({ dish, defaultType, allDishes, products, categ
                         <span className={cn("text-xs font-bold px-2 py-0.5 rounded-full", colors?.bg, colors?.text)}>
                           Grupo {groupName}
                         </span>
-                        <span className="text-xs text-gray-400">mín.</span>
+                        <span className="text-xs text-faint">mín.</span>
                         <div className="flex items-center gap-1">
                           <button
                             type="button"
                             onClick={() => updateGroupMin(groupName, -1, true)}
                             disabled={min <= 1}
-                            className="w-5 h-5 flex items-center justify-center rounded-full border border-gray-300 text-gray-600 disabled:opacity-30"
+                            className="w-5 h-5 flex items-center justify-center rounded-full border border-border-strong text-tertiary disabled:opacity-30"
                           >
                             <Minus size={10} />
                           </button>
@@ -497,12 +497,12 @@ export default function DishForm({ dish, defaultType, allDishes, products, categ
                             type="button"
                             onClick={() => updateGroupMin(groupName, 1, true)}
                             disabled={min >= members.length}
-                            className="w-5 h-5 flex items-center justify-center rounded-full border border-gray-300 text-gray-600 disabled:opacity-30"
+                            className="w-5 h-5 flex items-center justify-center rounded-full border border-border-strong text-tertiary disabled:opacity-30"
                           >
                             <Plus size={10} />
                           </button>
                         </div>
-                        <span className="text-xs text-gray-400">de {members.length}</span>
+                        <span className="text-xs text-faint">de {members.length}</span>
                         <div className="flex-1" />
                         <button
                           type="button"
@@ -518,11 +518,11 @@ export default function DishForm({ dish, defaultType, allDishes, products, categ
                         return (
                           <div key={s.sideId} className={cn("flex items-center gap-2 px-3 py-2 rounded-xl border", colors?.border, `${colors?.bg}/50`)}>
                             <span className="text-lg leading-none">{sideDish.emoji || "🥗"}</span>
-                            <span className="flex-1 text-sm font-medium text-gray-800 truncate">{sideDish.name}</span>
+                            <span className="flex-1 text-sm font-medium text-primary truncate">{sideDish.name}</span>
                             <button
                               type="button"
                               onClick={() => setSides((prev) => prev.filter((x) => x.sideId !== s.sideId))}
-                              className="w-6 h-6 flex items-center justify-center text-gray-300 active:text-red-500"
+                              className="w-6 h-6 flex items-center justify-center text-dimmed active:text-danger-text"
                             >
                               <X size={14} />
                             </button>
@@ -558,15 +558,15 @@ export default function DishForm({ dish, defaultType, allDishes, products, categ
 
           {/* Notas */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">
-              Notas <span className="text-gray-400 font-normal">(opcional)</span>
+            <label className="text-sm font-medium text-secondary">
+              Notas <span className="text-faint font-normal">(opcional)</span>
             </label>
             <textarea
               name="notes"
               defaultValue={dish?.notes ?? ""}
               placeholder="Ej: Marinar 30 min antes, servir con ensalada…"
               rows={2}
-              className="px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-base outline-none focus:border-emerald-500 focus:bg-white transition-colors resize-none"
+              className="px-3 py-2.5 rounded-xl border border-border-default bg-input-bg text-base outline-none focus:border-accent focus:bg-input-focus transition-colors resize-none"
             />
           </div>
 
@@ -575,7 +575,7 @@ export default function DishForm({ dish, defaultType, allDishes, products, categ
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 h-12 rounded-xl border border-gray-200 text-gray-600 font-medium text-base active:bg-gray-50"
+              className="flex-1 h-12 rounded-xl border border-border-default text-tertiary font-medium text-base active:bg-surface-alt"
             >
               Cancelar
             </button>
@@ -583,8 +583,8 @@ export default function DishForm({ dish, defaultType, allDishes, products, categ
               type="submit"
               disabled={isPending}
               className={cn(
-                "flex-1 h-12 rounded-xl font-semibold text-base text-white transition-colors",
-                isPending ? "bg-emerald-400" : "bg-emerald-600 active:bg-emerald-700"
+                "flex-1 h-12 rounded-xl font-semibold text-base text-inverted transition-colors",
+                isPending ? "bg-accent/70" : "bg-accent active:bg-accent-hover"
               )}
             >
               {isPending ? "Guardando…" : "Guardar"}
@@ -609,7 +609,7 @@ export default function DishForm({ dish, defaultType, allDishes, products, categ
           }
           accentColor={
             pickerTarget.type === "base"
-              ? { border: "border-emerald-500", bg: "bg-emerald-50", text: "text-emerald-700", check: "bg-emerald-500" }
+              ? { border: "border-accent", bg: "bg-accent-soft", text: "text-accent-text", check: "bg-accent" }
               : pickerTarget.type === "optional"
                 ? { border: "border-amber-400", bg: "bg-amber-50", text: "text-amber-700", check: "bg-amber-500" }
                 : (() => {
@@ -623,13 +623,13 @@ export default function DishForm({ dish, defaultType, allDishes, products, categ
       {/* Side Picker */}
       {sidePickerGroup !== null && (
         <>
-          <div className="fixed inset-0 bg-black/40 z-[70]" onClick={() => setSidePickerGroup(null)} />
-          <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl z-[80] max-h-[70vh] flex flex-col">
-            <div className="flex items-center justify-between px-4 pt-4 pb-2 shrink-0 border-b border-gray-100">
-              <h2 className="text-lg font-semibold text-gray-900">
+          <div className="fixed inset-0 bg-overlay z-[70]" onClick={() => setSidePickerGroup(null)} />
+          <div className="fixed bottom-0 left-0 right-0 bg-elevated rounded-t-2xl z-[80] max-h-[70vh] flex flex-col">
+            <div className="flex items-center justify-between px-4 pt-4 pb-2 shrink-0 border-b border-border-subtle">
+              <h2 className="text-lg font-semibold text-primary">
                 Acompañantes — Grupo {sidePickerGroup}
               </h2>
-              <button onClick={() => setSidePickerGroup(null)} className="w-9 h-9 flex items-center justify-center text-gray-400">
+              <button onClick={() => setSidePickerGroup(null)} className="w-9 h-9 flex items-center justify-center text-faint">
                 <X size={20} />
               </button>
             </div>
@@ -655,11 +655,11 @@ export default function DishForm({ dish, defaultType, allDishes, products, categ
                       "flex items-center gap-3 px-3 py-3 rounded-xl border-2 transition-colors text-left",
                       isSelected
                         ? `${colors?.border} ${colors?.bg}`
-                        : "border-gray-200 bg-white active:bg-gray-50"
+                        : "border-border-default bg-surface active:bg-surface-alt"
                     )}
                   >
                     <span className="text-xl">{sideDish.emoji || "🥗"}</span>
-                    <span className={cn("flex-1 text-sm font-medium", isSelected ? "text-gray-900" : "text-gray-600")}>
+                    <span className={cn("flex-1 text-sm font-medium", isSelected ? "text-primary" : "text-tertiary")}>
                       {sideDish.name}
                     </span>
                     {isSelected && (
@@ -671,7 +671,7 @@ export default function DishForm({ dish, defaultType, allDishes, products, categ
                 );
               })}
             </div>
-            <div className="shrink-0 border-t border-gray-100 px-4 py-3">
+            <div className="shrink-0 border-t border-border-subtle px-4 py-3">
               <button
                 type="button"
                 onClick={() => {
@@ -682,7 +682,7 @@ export default function DishForm({ dish, defaultType, allDishes, products, categ
                   );
                   setSidePickerGroup(null);
                 }}
-                className="w-full py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-xl active:bg-emerald-700"
+                className="w-full py-2.5 bg-accent text-inverted text-sm font-semibold rounded-xl active:bg-accent-hover"
               >
                 Confirmar
               </button>

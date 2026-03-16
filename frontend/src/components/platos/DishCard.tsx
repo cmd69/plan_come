@@ -113,7 +113,7 @@ export default function DishCard({ dish, onEdit }: DishCardProps) {
   const dishEmoji = dish.emoji || "🍽️";
 
   return (
-    <div className={cn("bg-white border-b border-gray-100", !dish.active && "opacity-50")}>
+    <div className={cn("bg-surface border-b border-border-subtle", !dish.active && "opacity-50")}>
       {/* Fila principal */}
       <div className="flex items-center gap-3 px-4 py-3">
         {/* Emoji del plato */}
@@ -121,23 +121,23 @@ export default function DishCard({ dish, onEdit }: DishCardProps) {
 
         {/* Info */}
         <div className="flex-1 min-w-0">
-          <p className={cn("text-base font-medium text-gray-900 truncate", !dish.active && "line-through")}>
+          <p className={cn("text-base font-medium text-primary truncate", !dish.active && "line-through")}>
             {dish.name}
           </p>
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-xs text-gray-400">{DISH_TYPE_LABELS[dish.type]}</span>
+            <span className="text-xs text-faint">{DISH_TYPE_LABELS[dish.type]}</span>
             {hasExpandable && (
               <>
-                <span className="text-gray-300 text-xs">·</span>
-                <span className={cn("text-xs font-medium", hasStock ? "text-emerald-600" : "text-red-400")}>
+                <span className="text-dimmed text-xs">·</span>
+                <span className={cn("text-xs font-medium", hasStock ? "text-accent-text" : "text-danger-text")}>
                   {hasStock ? "Disponible" : "Sin stock"}
                 </span>
               </>
             )}
             {dish.notes && (
               <>
-                <span className="text-gray-300 text-xs">·</span>
-                <span className="text-xs text-gray-400 italic truncate max-w-[120px]">{dish.notes}</span>
+                <span className="text-dimmed text-xs">·</span>
+                <span className="text-xs text-faint italic truncate max-w-[120px]">{dish.notes}</span>
               </>
             )}
           </div>
@@ -148,7 +148,7 @@ export default function DishCard({ dish, onEdit }: DishCardProps) {
           {hasExpandable && (
             <button
               onClick={() => setExpanded((v) => !v)}
-              className="w-8 h-8 flex items-center justify-center text-gray-400"
+              className="w-8 h-8 flex items-center justify-center text-faint"
               aria-label="Ver ingredientes"
             >
               <ChevronDown size={16} className={cn("transition-transform duration-200", expanded && "rotate-180")} />
@@ -159,18 +159,18 @@ export default function DishCard({ dish, onEdit }: DishCardProps) {
             className={cn(
               "h-7 px-2.5 rounded-full text-xs font-semibold transition-colors",
               dish.active
-                ? "bg-emerald-100 text-emerald-700 active:bg-emerald-200"
-                : "bg-gray-100 text-gray-500 active:bg-gray-200"
+                ? "bg-accent-muted text-accent-text active:bg-accent-hover"
+                : "bg-pressed text-muted active:bg-pressed-strong"
             )}
           >
             {dish.active ? "Activo" : "Inactivo"}
           </button>
-          <button onClick={() => onEdit(dish)} className="w-10 h-10 flex items-center justify-center text-gray-400 active:text-gray-700">
+          <button onClick={() => onEdit(dish)} className="w-10 h-10 flex items-center justify-center text-faint active:text-secondary">
             <Pencil size={17} />
           </button>
           <button
             onClick={handleDeleteTap}
-            className={cn("w-10 h-10 flex items-center justify-center transition-colors", pendingDelete ? "text-red-500" : "text-gray-400 active:text-red-500")}
+            className={cn("w-10 h-10 flex items-center justify-center transition-colors", pendingDelete ? "text-danger-text" : "text-faint active:text-danger-text")}
           >
             <Trash2 size={17} strokeWidth={pendingDelete ? 2.5 : 1.8} />
           </button>
@@ -191,7 +191,7 @@ export default function DishCard({ dish, onEdit }: DishCardProps) {
                     onClick={() => router.push(`/inventario?cat=${ing.product.category}`)}
                     className={cn(
                       "text-xs px-2 py-0.5 rounded-full font-medium",
-                      ok ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-600"
+                      ok ? "bg-accent-soft text-accent-text" : "bg-danger-soft text-danger-text"
                     )}
                   >
                     {ing.product.icon && `${ing.product.icon} `}
@@ -205,19 +205,19 @@ export default function DishCard({ dish, onEdit }: DishCardProps) {
           {/* Grouped alternatives */}
           {[...groups.entries()].map(([groupName, members]) => (
             <div key={groupName} className="flex flex-wrap items-center gap-1.5">
-              <span className={cn("text-[10px] font-bold px-1.5 py-0.5 rounded-full", GROUP_COLORS[groupName] ?? "bg-gray-100 text-gray-600")}>
+              <span className={cn("text-[10px] font-bold px-1.5 py-0.5 rounded-full", GROUP_COLORS[groupName] ?? "bg-pressed text-tertiary")}>
                 {members[0]?.groupMin ?? 1}/{members.length}
               </span>
               {members.map((ing) => {
                 const ok = ing.product.units >= ing.quantity;
-                const colors = GROUP_COLORS[groupName] ?? "bg-gray-50 text-gray-600";
+                const colors = GROUP_COLORS[groupName] ?? "bg-surface-alt text-tertiary";
                 return (
                   <button
                     key={ing.id}
                     onClick={() => router.push(`/inventario?cat=${ing.product.category}`)}
                     className={cn(
                       "text-xs px-2 py-0.5 rounded-full font-medium",
-                      ok ? colors : "bg-red-50 text-red-600"
+                      ok ? colors : "bg-danger-soft text-danger-text"
                     )}
                   >
                     {ing.product.icon && `${ing.product.icon} `}
@@ -246,22 +246,22 @@ export default function DishCard({ dish, onEdit }: DishCardProps) {
           )}
           {/* Sides */}
           {hasSides && (
-            <div className="flex flex-col gap-1 mt-1 pt-1 border-t border-gray-100">
-              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Acompañantes</span>
+            <div className="flex flex-col gap-1 mt-1 pt-1 border-t border-border-subtle">
+              <span className="text-[10px] font-bold text-faint uppercase tracking-wider">Acompañantes</span>
               {[...sideGroups.entries()].map(([groupName, members]) => (
                 <div key={groupName} className="flex flex-wrap items-center gap-1.5">
-                  <span className={cn("text-[10px] font-bold px-1.5 py-0.5 rounded-full", GROUP_COLORS[groupName] ?? "bg-gray-100 text-gray-600")}>
+                  <span className={cn("text-[10px] font-bold px-1.5 py-0.5 rounded-full", GROUP_COLORS[groupName] ?? "bg-pressed text-tertiary")}>
                     {members[0]?.groupMin ?? 1}/{members.length}
                   </span>
                   {members.map((s) => {
                     const ok = isSideAvailable(s.side);
-                    const colors = GROUP_COLORS[groupName] ?? "bg-gray-50 text-gray-600";
+                    const colors = GROUP_COLORS[groupName] ?? "bg-surface-alt text-tertiary";
                     return (
                       <span
                         key={s.id}
                         className={cn(
                           "text-xs px-2 py-0.5 rounded-full font-medium",
-                          ok ? colors : "bg-red-50 text-red-600"
+                          ok ? colors : "bg-danger-soft text-danger-text"
                         )}
                       >
                         {s.side.emoji || "🍽️"} {s.side.name}

@@ -63,18 +63,18 @@ export default function ProductGrid({ products, categories, initialCategory, onE
               <button
                 key={slug}
                 onClick={() => openCategory(slug)}
-                className="relative flex flex-col items-center justify-center gap-1.5 p-4 rounded-2xl bg-gray-50 border border-gray-200 active:bg-gray-100 aspect-square"
+                className="relative flex flex-col items-center justify-center gap-1.5 p-4 rounded-2xl bg-surface-alt border border-border-default active:bg-pressed aspect-square"
               >
                 {inStock > 0 && (
-                  <span className="absolute top-2 right-2 w-5 h-5 bg-emerald-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                  <span className="absolute top-2 right-2 w-5 h-5 bg-accent text-inverted text-[10px] font-bold rounded-full flex items-center justify-center">
                     {inStock}
                   </span>
                 )}
                 <span className="text-3xl">{emojis[slug] ?? "📦"}</span>
-                <span className="text-xs font-medium text-gray-700 text-center leading-tight">
+                <span className="text-xs font-medium text-secondary text-center leading-tight">
                   {labels[slug] ?? slug}
                 </span>
-                <span className="text-[10px] text-gray-400">{total}</span>
+                <span className="text-[10px] text-faint">{total}</span>
               </button>
             );
           })}
@@ -83,7 +83,7 @@ export default function ProductGrid({ products, categories, initialCategory, onE
         <>
           <button
             onClick={() => { closeCategory(); history.back(); }}
-            className="flex items-center gap-1 text-sm font-medium text-gray-600 mb-3 active:text-gray-800"
+            className="flex items-center gap-1 text-sm font-medium text-tertiary mb-3 active:text-primary"
           >
             <ChevronLeft size={18} />
             <span>{emojis[activeCategory] ?? "📦"}</span>
@@ -100,7 +100,7 @@ export default function ProductGrid({ products, categories, initialCategory, onE
             ))}
             <button
               onClick={() => onAdd(activeCategory!)}
-              className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-300 p-3 gap-1 aspect-square text-gray-400 active:bg-gray-50"
+              className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border-strong p-3 gap-1 aspect-square text-faint active:bg-surface-alt"
             >
               <Plus size={24} />
               <span className="text-[11px] font-medium">Añadir</span>
@@ -149,8 +149,8 @@ function ProductGridTile({
       className={cn(
         "flex flex-col items-center rounded-2xl border-2 p-3 gap-1 relative",
         units === 0
-          ? "border-red-200 bg-red-50/50"
-          : "border-gray-200 bg-white"
+          ? "border-danger-border bg-danger-soft"
+          : "border-border-default bg-surface"
       )}
     >
       {product.priority > 0 && (
@@ -164,7 +164,7 @@ function ProductGridTile({
       <div className="absolute top-1 right-1 flex">
         <button
           onClick={() => onEdit(product)}
-          className="w-7 h-7 flex items-center justify-center text-gray-300 active:text-gray-600"
+          className="w-7 h-7 flex items-center justify-center text-dimmed active:text-tertiary"
         >
           <Pencil size={12} />
         </button>
@@ -172,7 +172,7 @@ function ProductGridTile({
           onClick={handleDeleteTap}
           className={cn(
             "w-7 h-7 flex items-center justify-center transition-colors",
-            pendingDelete ? "text-red-500" : "text-gray-300 active:text-red-500"
+            pendingDelete ? "text-danger-text" : "text-dimmed active:text-danger-text"
           )}
         >
           <Trash2 size={12} strokeWidth={pendingDelete ? 2.5 : 1.8} />
@@ -183,7 +183,7 @@ function ProductGridTile({
         {product.icon || "📦"}
       </span>
 
-      <span className="text-[11px] font-medium text-gray-700 text-center leading-tight line-clamp-2 w-full">
+      <span className="text-[11px] font-medium text-secondary text-center leading-tight line-clamp-2 w-full">
         {product.name}
       </span>
 
@@ -194,8 +194,8 @@ function ProductGridTile({
           className={cn(
             "w-7 h-7 flex items-center justify-center rounded-full border text-sm font-semibold",
             units === 0
-              ? "border-gray-200 text-gray-300"
-              : "border-gray-300 text-gray-700 active:bg-gray-100"
+              ? "border-border-default text-dimmed"
+              : "border-border-strong text-secondary active:bg-pressed"
           )}
         >
           <Minus size={12} />
@@ -203,14 +203,14 @@ function ProductGridTile({
         <span
           className={cn(
             "w-6 text-center text-sm font-bold tabular-nums",
-            units === 0 ? "text-red-500" : "text-gray-900"
+            units === 0 ? "text-danger-text" : "text-primary"
           )}
         >
           {units}
         </span>
         <button
           onClick={() => handleUnit(1)}
-          className="w-7 h-7 flex items-center justify-center rounded-full border border-gray-300 text-sm font-semibold text-gray-700 active:bg-gray-100"
+          className="w-7 h-7 flex items-center justify-center rounded-full border border-border-strong text-sm font-semibold text-secondary active:bg-pressed"
         >
           <Plus size={12} />
         </button>

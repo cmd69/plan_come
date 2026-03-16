@@ -49,16 +49,16 @@ export default function CategoryForm({ category, onClose }: CategoryFormProps) {
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/40 z-50" onClick={onClose} />
+      <div className="fixed inset-0 bg-overlay z-50" onClick={onClose} />
 
-      <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl z-[60] max-h-[90vh] flex flex-col">
+      <div className="fixed bottom-0 left-0 right-0 bg-surface rounded-t-2xl z-[60] max-h-[90vh] flex flex-col">
         <div className="flex items-center justify-between px-4 pt-4 pb-2 shrink-0">
-          <h2 className="text-lg font-semibold text-gray-900">
+          <h2 className="text-lg font-semibold text-primary">
             {category ? "Editar categoría" : "Nueva categoría"}
           </h2>
           <button
             onClick={onClose}
-            className="w-9 h-9 flex items-center justify-center text-gray-400"
+            className="w-9 h-9 flex items-center justify-center text-faint"
           >
             <X size={20} />
           </button>
@@ -71,7 +71,7 @@ export default function CategoryForm({ category, onClose }: CategoryFormProps) {
           {/* Emoji + Label */}
           <div className="flex gap-2">
             <div className="flex flex-col gap-1.5 w-16 shrink-0">
-              <label className="text-sm font-medium text-gray-700">Emoji</label>
+              <label className="text-sm font-medium text-secondary">Emoji</label>
               <input
                 ref={emojiRef}
                 name="emoji"
@@ -80,11 +80,11 @@ export default function CategoryForm({ category, onClose }: CategoryFormProps) {
                 required
                 placeholder="📦"
                 maxLength={4}
-                className="h-12 px-2 rounded-xl border border-gray-200 bg-gray-50 text-2xl text-center outline-none focus:border-emerald-500 focus:bg-white transition-colors"
+                className="h-12 px-2 rounded-xl border border-border-default bg-input-bg text-2xl text-center outline-none focus:border-accent focus:bg-input-focus transition-colors"
               />
             </div>
             <div className="flex flex-col gap-1.5 flex-1">
-              <label className="text-sm font-medium text-gray-700">Nombre</label>
+              <label className="text-sm font-medium text-secondary">Nombre</label>
               <input
                 name="label"
                 type="text"
@@ -92,16 +92,16 @@ export default function CategoryForm({ category, onClose }: CategoryFormProps) {
                 required
                 placeholder="Ej: Congelados"
                 onChange={handleLabelChange}
-                className="h-12 px-3 rounded-xl border border-gray-200 bg-gray-50 text-base outline-none focus:border-emerald-500 focus:bg-white transition-colors"
+                className="h-12 px-3 rounded-xl border border-border-default bg-input-bg text-base outline-none focus:border-accent focus:bg-input-focus transition-colors"
               />
             </div>
           </div>
 
           {/* Slug */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">
+            <label className="text-sm font-medium text-secondary">
               Identificador{" "}
-              <span className="text-gray-400 font-normal">(para CSV)</span>
+              <span className="text-faint font-normal">(para CSV)</span>
             </label>
             <input
               name="slug"
@@ -109,7 +109,7 @@ export default function CategoryForm({ category, onClose }: CategoryFormProps) {
               defaultValue={category?.slug ?? ""}
               required
               placeholder="CONGELADOS"
-              className="h-12 px-3 rounded-xl border border-gray-200 bg-gray-50 text-base font-mono outline-none focus:border-emerald-500 focus:bg-white transition-colors uppercase"
+              className="h-12 px-3 rounded-xl border border-border-default bg-input-bg text-base font-mono outline-none focus:border-accent focus:bg-input-focus transition-colors uppercase"
             />
           </div>
 
@@ -118,7 +118,7 @@ export default function CategoryForm({ category, onClose }: CategoryFormProps) {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 h-12 rounded-xl border border-gray-200 text-gray-600 font-medium text-base active:bg-gray-50"
+              className="flex-1 h-12 rounded-xl border border-border-default text-tertiary font-medium text-base active:bg-pressed"
             >
               Cancelar
             </button>
@@ -126,10 +126,10 @@ export default function CategoryForm({ category, onClose }: CategoryFormProps) {
               type="submit"
               disabled={isPending}
               className={cn(
-                "flex-1 h-12 rounded-xl font-semibold text-base text-white transition-colors",
+                "flex-1 h-12 rounded-xl font-semibold text-base text-inverted transition-colors",
                 isPending
-                  ? "bg-emerald-400"
-                  : "bg-emerald-600 active:bg-emerald-700"
+                  ? "bg-accent/70"
+                  : "bg-accent active:bg-accent-hover"
               )}
             >
               {isPending ? "Guardando…" : "Guardar"}

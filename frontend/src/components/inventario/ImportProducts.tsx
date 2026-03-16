@@ -67,7 +67,7 @@ export default function ImportProducts() {
       <a
         href="/api/import/products/template"
         download
-        className="flex items-center gap-2 text-sm text-emerald-600 font-medium active:text-emerald-700"
+        className="flex items-center gap-2 text-sm text-accent-text font-medium active:text-accent-hover"
       >
         <Download size={16} />
         Descargar plantilla CSV
@@ -86,28 +86,28 @@ export default function ImportProducts() {
       {!preview ? (
         <button
           onClick={() => fileRef.current?.click()}
-          className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-xl active:bg-blue-700"
+          className="flex items-center gap-2 px-5 py-2.5 bg-accent text-inverted text-sm font-semibold rounded-xl active:bg-accent-hover"
         >
           <Upload size={16} />
           Importar CSV
         </button>
       ) : (
-        <div className="w-full bg-gray-50 rounded-xl p-4 border border-gray-200">
+        <div className="w-full bg-surface-alt rounded-xl p-4 border border-border-default">
           <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2 text-sm text-gray-700">
+            <div className="flex items-center gap-2 text-sm text-secondary">
               <FileText size={16} />
               <span className="font-medium">{lineCount} productos</span>
             </div>
             <button
               onClick={reset}
-              className="p-1 text-gray-400 active:text-gray-600"
+              className="p-1 text-faint active:text-tertiary"
             >
               <X size={16} />
             </button>
           </div>
 
           {/* Preview: first 5 data lines */}
-          <div className="text-xs text-gray-500 font-mono bg-white rounded-lg p-2 mb-3 max-h-32 overflow-y-auto border border-gray-100">
+          <div className="text-xs text-muted font-mono bg-surface rounded-lg p-2 mb-3 max-h-32 overflow-y-auto border border-border-subtle">
             {preview
               .split(/\r?\n/)
               .filter((l) => l.trim() && !l.startsWith("#"))
@@ -118,7 +118,7 @@ export default function ImportProducts() {
                 </div>
               ))}
             {lineCount > 5 && (
-              <div className="text-gray-400 mt-1">
+              <div className="text-faint mt-1">
                 ... y {lineCount - 5} más
               </div>
             )}
@@ -128,7 +128,7 @@ export default function ImportProducts() {
           {result && (
             <div className="text-sm mb-3 space-y-1">
               {result.imported > 0 && (
-                <p className="text-emerald-600 font-medium">
+                <p className="text-accent-text font-medium">
                   {result.imported} productos importados
                 </p>
               )}
@@ -138,7 +138,7 @@ export default function ImportProducts() {
                 </p>
               )}
               {result.errors.length > 0 && (
-                <div className="text-red-600">
+                <div className="text-danger-text">
                   {result.errors.slice(0, 5).map((err, i) => (
                     <p key={i}>{err}</p>
                   ))}
@@ -155,7 +155,7 @@ export default function ImportProducts() {
             <button
               onClick={handleImport}
               disabled={importing}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-xl active:bg-emerald-700 disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-accent text-inverted text-sm font-semibold rounded-xl active:bg-accent-hover disabled:opacity-50"
             >
               {importing ? (
                 <>

@@ -133,23 +133,23 @@ export default function ProductList({ products, categories, initialCategory }: P
   return (
     <>
       {/* Header */}
-      <header className="sticky top-0 bg-white border-b border-gray-200 px-4 py-4 z-10 flex items-center justify-between">
+      <header className="sticky top-0 bg-surface border-b border-border-default px-4 py-4 z-10 flex items-center justify-between">
         {selectionMode ? (
           <>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setSelected(new Set())}
-                className="w-8 h-8 flex items-center justify-center text-gray-500 active:bg-gray-100 rounded-lg"
+                className="w-8 h-8 flex items-center justify-center text-muted active:bg-pressed rounded-lg"
               >
                 <X size={18} />
               </button>
-              <span className="text-base font-semibold text-gray-900">
+              <span className="text-base font-semibold text-primary">
                 {selected.size} seleccionado{selected.size > 1 ? "s" : ""}
               </span>
             </div>
             <button
               onClick={() => setShowBulkEdit(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-emerald-600 bg-emerald-50 rounded-lg active:bg-emerald-100"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-accent-text bg-accent-soft rounded-lg active:bg-accent-muted"
             >
               <Pencil size={14} />
               Editar
@@ -157,19 +157,21 @@ export default function ProductList({ products, categories, initialCategory }: P
           </>
         ) : (
           <>
-            <h1 className="text-xl font-bold text-gray-900">Inventario</h1>
+            <h1 className="text-xl font-bold text-primary">
+              <span className="mr-1.5">📦</span>Inventario
+            </h1>
             {!isEmpty && (
               <div className="flex items-center gap-1.5">
                 <button
                   onClick={() => setShowResetConfirm(true)}
-                  className="flex items-center justify-center w-8 h-8 text-gray-500 bg-gray-100 rounded-lg active:bg-gray-200"
+                  className="flex items-center justify-center w-8 h-8 text-muted bg-pressed rounded-lg active:bg-pressed-strong"
                   title="Poner todo a 0"
                 >
                   <RotateCcw size={15} />
                 </button>
                 <button
                   onClick={() => setViewMode((v) => (v === "list" ? "grid" : "list"))}
-                  className="flex items-center justify-center w-8 h-8 text-gray-500 bg-gray-100 rounded-lg active:bg-gray-200"
+                  className="flex items-center justify-center w-8 h-8 text-muted bg-pressed rounded-lg active:bg-pressed-strong"
                   title={viewMode === "list" ? "Vista cuadrícula" : "Vista lista"}
                 >
                   {viewMode === "list" ? <LayoutGrid size={15} /> : <List size={15} />}
@@ -179,7 +181,7 @@ export default function ProductList({ products, categories, initialCategory }: P
                   <div className="relative">
                     <button
                       onClick={() => setShowSortMenu((v) => !v)}
-                      className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 rounded-lg active:bg-gray-200"
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-tertiary bg-pressed rounded-lg active:bg-pressed-strong"
                     >
                       <CurrentIcon size={14} />
                       {currentSort.label}
@@ -191,7 +193,7 @@ export default function ProductList({ products, categories, initialCategory }: P
                           className="fixed inset-0 z-20"
                           onClick={() => setShowSortMenu(false)}
                         />
-                        <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-30 min-w-[160px] py-1">
+                        <div className="absolute right-0 top-full mt-1 bg-surface border border-border-default rounded-xl shadow-lg z-30 min-w-[160px] py-1">
                           {SORT_OPTIONS.map((opt) => {
                             const isActive = opt.key === sortKey;
                             const Icon = isActive
@@ -204,16 +206,16 @@ export default function ProductList({ products, categories, initialCategory }: P
                                 key={opt.key}
                                 onClick={() => handleSortSelect(opt.key)}
                                 className={cn(
-                                  "w-full flex items-center gap-2 px-3 py-2.5 text-sm active:bg-gray-50",
+                                  "w-full flex items-center gap-2 px-3 py-2.5 text-sm active:bg-pressed",
                                   isActive
-                                    ? "text-emerald-600 font-medium"
-                                    : "text-gray-700"
+                                    ? "text-accent-text font-medium"
+                                    : "text-secondary"
                                 )}
                               >
                                 <Icon size={16} />
                                 <span className="flex-1 text-left">{opt.label}</span>
                                 {isActive && (
-                                  <span className="text-xs text-gray-400">
+                                  <span className="text-xs text-faint">
                                     {sortDir === "asc" ? "A-Z" : "Z-A"}
                                   </span>
                                 )}
@@ -232,17 +234,17 @@ export default function ProductList({ products, categories, initialCategory }: P
       </header>
 
       {isEmpty ? (
-        <div className="flex flex-col items-center justify-center py-20 text-gray-400 gap-5">
+        <div className="flex flex-col items-center justify-center py-20 text-faint gap-5">
           <span className="text-4xl">📦</span>
           <p className="text-base">No hay productos todavía</p>
           <button
             onClick={() => setFormProduct(null)}
-            className="px-5 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-xl active:bg-emerald-700"
+            className="px-5 py-2.5 bg-accent text-inverted text-sm font-semibold rounded-xl active:bg-accent-hover"
           >
             Añadir el primero
           </button>
-          <div className="w-full border-t border-gray-100 pt-4">
-            <p className="text-sm text-gray-400 text-center mb-3">
+          <div className="w-full border-t border-border-subtle pt-4">
+            <p className="text-sm text-faint text-center mb-3">
               o importa muchos a la vez
             </p>
             <ImportProducts />
@@ -264,7 +266,7 @@ export default function ProductList({ products, categories, initialCategory }: P
               <section key={slug}>
                 <button
                   onClick={() => toggleSection(slug)}
-                  className="w-full px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-gray-600 bg-gray-50 border-b border-gray-100 flex items-center gap-1.5 active:bg-gray-100"
+                  className="w-full px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-tertiary bg-surface-alt border-b border-border-subtle flex items-center gap-1.5 active:bg-pressed"
                 >
                   <ChevronDown
                     size={14}
@@ -275,7 +277,7 @@ export default function ProductList({ products, categories, initialCategory }: P
                   />
                   <span>{emoji}</span>
                   <span className="flex-1 text-left">{label}</span>
-                  <span className="text-gray-400 normal-case font-normal tracking-normal">
+                  <span className="text-faint normal-case font-normal tracking-normal">
                     {groupProducts.length}
                   </span>
                 </button>
@@ -301,7 +303,7 @@ export default function ProductList({ products, categories, initialCategory }: P
       {!isEmpty && !selectionMode && (
         <button
           onClick={() => setFormProduct(null)}
-          className="fixed bottom-20 right-4 w-14 h-14 bg-emerald-600 text-white rounded-full shadow-lg flex items-center justify-center active:bg-emerald-700 transition-colors z-30"
+          className="fixed bottom-20 right-4 w-14 h-14 bg-accent text-inverted rounded-full shadow-lg flex items-center justify-center active:bg-accent-hover transition-colors z-30"
           aria-label="Añadir producto"
         >
           <Plus size={26} strokeWidth={2.5} />
@@ -330,18 +332,18 @@ export default function ProductList({ products, categories, initialCategory }: P
       {/* Reset confirm */}
       {showResetConfirm && (
         <>
-          <div className="fixed inset-0 bg-black/40 z-[70]" onClick={() => setShowResetConfirm(false)} />
-          <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl z-[80] px-4 pt-6 pb-8">
-            <p className="text-base font-semibold text-gray-900 text-center mb-2">
+          <div className="fixed inset-0 bg-overlay z-[70]" onClick={() => setShowResetConfirm(false)} />
+          <div className="fixed bottom-0 left-0 right-0 bg-surface rounded-t-2xl z-[80] px-4 pt-6 pb-8">
+            <p className="text-base font-semibold text-primary text-center mb-2">
               Poner todo a 0
             </p>
-            <p className="text-sm text-gray-500 text-center mb-6">
+            <p className="text-sm text-muted text-center mb-6">
               Se pondrán las unidades de todos los productos a 0
             </p>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowResetConfirm(false)}
-                className="flex-1 h-12 rounded-xl border border-gray-200 text-gray-600 font-medium text-base active:bg-gray-50"
+                className="flex-1 h-12 rounded-xl border border-border-default text-tertiary font-medium text-base active:bg-pressed"
               >
                 Cancelar
               </button>
@@ -354,8 +356,8 @@ export default function ProductList({ products, categories, initialCategory }: P
                   });
                 }}
                 className={cn(
-                  "flex-1 h-12 rounded-xl font-semibold text-base text-white",
-                  isPending ? "bg-red-400" : "bg-red-600 active:bg-red-700"
+                  "flex-1 h-12 rounded-xl font-semibold text-base text-inverted",
+                  isPending ? "bg-danger/70" : "bg-danger active:bg-danger-hover"
                 )}
               >
                 {isPending ? "Reseteando…" : "Confirmar"}

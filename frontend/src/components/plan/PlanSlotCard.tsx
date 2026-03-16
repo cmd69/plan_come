@@ -62,7 +62,7 @@ export default function PlanSlotCard({
       >
         {/* Meal label */}
         <div className="w-16 shrink-0">
-          <span className="text-xs text-gray-500 flex items-center gap-1">
+          <span className="text-xs text-muted flex items-center gap-1">
             <span>{MEAL_EMOJIS[meal]}</span>
             {MEAL_LABELS[meal]}
           </span>
@@ -74,10 +74,10 @@ export default function PlanSlotCard({
           className={cn(
             "flex-1 text-left text-sm rounded-xl px-3 py-2.5 min-h-[44px] flex items-center",
             eatenOut
-              ? "bg-gray-100 text-gray-400 line-through"
+              ? "bg-pressed text-faint line-through"
               : dish
-              ? "bg-emerald-50 text-gray-800 font-medium"
-              : "bg-gray-50 text-gray-400 border border-dashed border-gray-200"
+              ? "bg-accent-soft text-primary font-medium"
+              : "bg-surface-alt text-faint border border-dashed border-border-default"
           )}
         >
           {eatenOut ? (
@@ -94,7 +94,7 @@ export default function PlanSlotCard({
           <button
             onClick={handleRegenerate}
             disabled={isPending || eatenOut}
-            className="w-9 h-9 flex items-center justify-center text-gray-400 active:text-emerald-600 disabled:opacity-30"
+            className="w-9 h-9 flex items-center justify-center text-faint active:text-accent-text disabled:opacity-30"
             title="Regenerar"
           >
             <RefreshCw size={16} />
@@ -104,7 +104,7 @@ export default function PlanSlotCard({
             disabled={isPending}
             className={cn(
               "w-9 h-9 flex items-center justify-center active:text-amber-600 disabled:opacity-30",
-              eatenOut ? "text-amber-500" : "text-gray-400"
+              eatenOut ? "text-amber-500" : "text-faint"
             )}
             title="Fuera de casa"
           >

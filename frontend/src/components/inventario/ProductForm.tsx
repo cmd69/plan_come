@@ -39,18 +39,18 @@ export default function ProductForm({ product, categories, defaultCategory, onCl
   return (
     <>
       <div
-        className="fixed inset-0 bg-black/40 z-50"
+        className="fixed inset-0 bg-overlay z-50"
         onClick={onClose}
       />
 
-      <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl z-[60] max-h-[90vh] flex flex-col">
+      <div className="fixed bottom-0 left-0 right-0 bg-elevated rounded-t-2xl z-[60] max-h-[90vh] flex flex-col">
         <div className="flex items-center justify-between px-4 pt-4 pb-2 shrink-0">
-          <h2 className="text-lg font-semibold text-gray-900">
+          <h2 className="text-lg font-semibold text-primary">
             {product ? "Editar producto" : "Nuevo producto"}
           </h2>
           <button
             onClick={onClose}
-            className="w-9 h-9 flex items-center justify-center text-gray-400 rounded-full"
+            className="w-9 h-9 flex items-center justify-center text-faint rounded-full"
           >
             <X size={20} />
           </button>
@@ -60,18 +60,18 @@ export default function ProductForm({ product, categories, defaultCategory, onCl
           {/* Icono + Nombre */}
           <div className="flex gap-2">
             <div className="flex flex-col gap-1.5 w-16 shrink-0">
-              <label className="text-sm font-medium text-gray-700">Icono</label>
+              <label className="text-sm font-medium text-secondary">Icono</label>
               <input
                 name="icon"
                 type="text"
                 defaultValue={product?.icon ?? ""}
                 placeholder="🥩"
                 maxLength={4}
-                className="h-12 px-2 rounded-xl border border-gray-200 bg-gray-50 text-2xl text-center outline-none focus:border-emerald-500 focus:bg-white transition-colors"
+                className="h-12 px-2 rounded-xl border border-border-default bg-input-bg text-2xl text-center outline-none focus:border-accent focus:bg-input-focus transition-colors"
               />
             </div>
             <div className="flex flex-col gap-1.5 flex-1">
-              <label className="text-sm font-medium text-gray-700">Nombre</label>
+              <label className="text-sm font-medium text-secondary">Nombre</label>
               <input
                 ref={firstInputRef}
                 name="name"
@@ -79,19 +79,19 @@ export default function ProductForm({ product, categories, defaultCategory, onCl
                 defaultValue={product?.name ?? ""}
                 required
                 placeholder="Ej: Alitas de pollo"
-                className="h-12 px-3 rounded-xl border border-gray-200 bg-gray-50 text-base outline-none focus:border-emerald-500 focus:bg-white transition-colors"
+                className="h-12 px-3 rounded-xl border border-border-default bg-input-bg text-base outline-none focus:border-accent focus:bg-input-focus transition-colors"
               />
             </div>
           </div>
 
           {/* Categoría */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">Categoría</label>
+            <label className="text-sm font-medium text-secondary">Categoría</label>
             <select
               name="category"
               defaultValue={product?.category ?? defaultCategory ?? ""}
               required
-              className="h-12 px-3 rounded-xl border border-gray-200 bg-gray-50 text-base outline-none focus:border-emerald-500 focus:bg-white transition-colors appearance-none"
+              className="h-12 px-3 rounded-xl border border-border-default bg-input-bg text-base outline-none focus:border-accent focus:bg-input-focus transition-colors appearance-none"
             >
               <option value="" disabled>
                 Selecciona una categoría
@@ -106,7 +106,7 @@ export default function ProductForm({ product, categories, defaultCategory, onCl
 
           {/* Prioridad */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">Prioridad</label>
+            <label className="text-sm font-medium text-secondary">Prioridad</label>
             <input type="hidden" name="priority" value={priority} />
             <div className="flex gap-2">
               {[0, 1, 2, 3].map((p) => (
@@ -118,7 +118,7 @@ export default function ProductForm({ product, categories, defaultCategory, onCl
                     "flex-1 h-10 rounded-xl text-sm font-medium transition-colors border",
                     priority === p
                       ? PRIORITY_BG[p] + " border-current"
-                      : "bg-gray-50 text-gray-400 border-gray-200 active:bg-gray-100"
+                      : "bg-input-bg text-faint border-border-default active:bg-pressed"
                   )}
                 >
                   {PRIORITY_LABELS[p]}
@@ -132,7 +132,7 @@ export default function ProductForm({ product, categories, defaultCategory, onCl
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 h-12 rounded-xl border border-gray-200 text-gray-600 font-medium text-base active:bg-gray-50"
+              className="flex-1 h-12 rounded-xl border border-border-default text-tertiary font-medium text-base active:bg-surface-alt"
             >
               Cancelar
             </button>
@@ -140,8 +140,8 @@ export default function ProductForm({ product, categories, defaultCategory, onCl
               type="submit"
               disabled={isPending}
               className={cn(
-                "flex-1 h-12 rounded-xl font-semibold text-base text-white transition-colors",
-                isPending ? "bg-emerald-400" : "bg-emerald-600 active:bg-emerald-700"
+                "flex-1 h-12 rounded-xl font-semibold text-base text-inverted transition-colors",
+                isPending ? "bg-accent/70" : "bg-accent active:bg-accent-hover"
               )}
             >
               {isPending ? "Guardando…" : "Guardar"}

@@ -103,36 +103,36 @@ export default function DishDetailSheet({ dish, onEdit, onClose }: DishDetailShe
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/40 z-[60]" onClick={onClose} />
+      <div className="fixed inset-0 bg-overlay z-[60]" onClick={onClose} />
 
-      <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl z-[65] max-h-[80vh] flex flex-col">
+      <div className="fixed bottom-0 left-0 right-0 bg-elevated rounded-t-2xl z-[65] max-h-[80vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center gap-3 px-4 pt-5 pb-3 shrink-0">
           <span className="text-3xl">{dish.emoji || "🍽️"}</span>
           <div className="flex-1 min-w-0">
-            <p className={cn("text-lg font-semibold text-gray-900 truncate", !dish.active && "line-through opacity-50")}>
+            <p className={cn("text-lg font-semibold text-primary truncate", !dish.active && "line-through opacity-50")}>
               {dish.name}
             </p>
             <div className="flex items-center gap-1.5">
-              <span className="text-xs text-gray-400">{DISH_TYPE_EMOJIS[dish.type]} {DISH_TYPE_LABELS[dish.type]}</span>
+              <span className="text-xs text-faint">{DISH_TYPE_EMOJIS[dish.type]} {DISH_TYPE_LABELS[dish.type]}</span>
               {(hasIngredients || hasSides) && (
                 <>
-                  <span className="text-gray-300 text-xs">·</span>
-                  <span className={cn("text-xs font-medium", hasStock ? "text-emerald-600" : "text-red-400")}>
+                  <span className="text-dimmed text-xs">·</span>
+                  <span className={cn("text-xs font-medium", hasStock ? "text-accent-text" : "text-danger-text")}>
                     {hasStock ? "Disponible" : "Sin stock"}
                   </span>
                 </>
               )}
             </div>
           </div>
-          <button onClick={onClose} className="w-9 h-9 flex items-center justify-center text-gray-400 shrink-0">
+          <button onClick={onClose} className="w-9 h-9 flex items-center justify-center text-faint shrink-0">
             <X size={20} />
           </button>
         </div>
 
         {/* Notas */}
         {dish.notes && (
-          <p className="px-4 pb-2 text-sm text-gray-500 italic">{dish.notes}</p>
+          <p className="px-4 pb-2 text-sm text-muted italic">{dish.notes}</p>
         )}
 
         {/* Ingredientes */}
@@ -149,7 +149,7 @@ export default function DishDetailSheet({ dish, onEdit, onClose }: DishDetailShe
                       onClick={() => { onClose(); router.push(`/inventario?cat=${ing.product.category}`); }}
                       className={cn(
                         "text-xs px-2 py-0.5 rounded-full font-medium",
-                        ok ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-600"
+                        ok ? "bg-accent-soft text-accent-text" : "bg-danger-soft text-danger-text"
                       )}
                     >
                       {ing.product.icon && `${ing.product.icon} `}
@@ -164,19 +164,19 @@ export default function DishDetailSheet({ dish, onEdit, onClose }: DishDetailShe
             {/* Grupos de ingredientes */}
             {[...groups.entries()].map(([groupName, members]) => (
               <div key={groupName} className="flex flex-wrap items-center gap-1.5">
-                <span className={cn("text-[10px] font-bold px-1.5 py-0.5 rounded-full", GROUP_COLORS[groupName] ?? "bg-gray-100 text-gray-600")}>
+                <span className={cn("text-[10px] font-bold px-1.5 py-0.5 rounded-full", GROUP_COLORS[groupName] ?? "bg-surface-alt text-muted")}>
                   {members[0]?.groupMin ?? 1}/{members.length}
                 </span>
                 {members.map((ing) => {
                   const ok = ing.product.units >= ing.quantity;
-                  const colors = GROUP_COLORS[groupName] ?? "bg-gray-50 text-gray-600";
+                  const colors = GROUP_COLORS[groupName] ?? "bg-surface-alt text-muted";
                   return (
                     <button
                       key={ing.id}
                       onClick={() => { onClose(); router.push(`/inventario?cat=${ing.product.category}`); }}
                       className={cn(
                         "text-xs px-2 py-0.5 rounded-full font-medium",
-                        ok ? colors : "bg-red-50 text-red-600"
+                        ok ? colors : "bg-danger-soft text-danger-text"
                       )}
                     >
                       {ing.product.icon && `${ing.product.icon} `}
@@ -195,7 +195,7 @@ export default function DishDetailSheet({ dish, onEdit, onClose }: DishDetailShe
                   <button
                     key={ing.id}
                     onClick={() => { onClose(); router.push(`/inventario?cat=${ing.product.category}`); }}
-                    className="text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 font-medium"
+                    className="text-xs px-2 py-0.5 rounded-full bg-accent-soft text-accent-text font-medium"
                   >
                     {ing.product.icon && `${ing.product.icon} `}
                     {ing.product.name}{" "}
@@ -207,22 +207,22 @@ export default function DishDetailSheet({ dish, onEdit, onClose }: DishDetailShe
 
             {/* Acompañantes */}
             {hasSides && (
-              <div className="flex flex-col gap-1 mt-1 pt-2 border-t border-gray-100">
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Acompañantes</span>
+              <div className="flex flex-col gap-1 mt-1 pt-2 border-t border-border-subtle">
+                <span className="text-[10px] font-bold text-faint uppercase tracking-wider">Acompañantes</span>
                 {[...sideGroups.entries()].map(([groupName, members]) => (
                   <div key={groupName} className="flex flex-wrap items-center gap-1.5">
-                    <span className={cn("text-[10px] font-bold px-1.5 py-0.5 rounded-full", GROUP_COLORS[groupName] ?? "bg-gray-100 text-gray-600")}>
+                    <span className={cn("text-[10px] font-bold px-1.5 py-0.5 rounded-full", GROUP_COLORS[groupName] ?? "bg-surface-alt text-muted")}>
                       {members[0]?.groupMin ?? 1}/{members.length}
                     </span>
                     {members.map((s) => {
                       const ok = isSideAvailable(s.side);
-                      const colors = GROUP_COLORS[groupName] ?? "bg-gray-50 text-gray-600";
+                      const colors = GROUP_COLORS[groupName] ?? "bg-surface-alt text-muted";
                       return (
                         <span
                           key={s.id}
                           className={cn(
                             "text-xs px-2 py-0.5 rounded-full font-medium",
-                            ok ? colors : "bg-red-50 text-red-600"
+                            ok ? colors : "bg-danger-soft text-danger-text"
                           )}
                         >
                           {s.side.emoji || "🍽️"} {s.side.name}
@@ -237,14 +237,14 @@ export default function DishDetailSheet({ dish, onEdit, onClose }: DishDetailShe
         )}
 
         {/* Acciones */}
-        <div className="shrink-0 border-t border-gray-100 px-4 py-3 flex items-center gap-2">
+        <div className="shrink-0 border-t border-border-subtle px-4 py-3 flex items-center gap-2">
           <button
             onClick={handleToggleActive}
             className={cn(
               "h-10 px-4 rounded-xl text-sm font-semibold transition-colors",
               dish.active
-                ? "bg-emerald-100 text-emerald-700 active:bg-emerald-200"
-                : "bg-gray-100 text-gray-500 active:bg-gray-200"
+                ? "bg-accent-soft text-accent-text active:bg-accent-muted"
+                : "bg-pressed text-muted active:bg-pressed-strong"
             )}
           >
             {dish.active ? "Activo" : "Inactivo"}
@@ -254,14 +254,14 @@ export default function DishDetailSheet({ dish, onEdit, onClose }: DishDetailShe
             onClick={handleDeleteTap}
             className={cn(
               "w-10 h-10 flex items-center justify-center rounded-xl transition-colors",
-              pendingDelete ? "bg-red-100 text-red-600" : "text-gray-400 active:text-red-500"
+              pendingDelete ? "bg-danger-soft text-danger-text" : "text-faint active:text-danger-text"
             )}
           >
             <Trash2 size={18} strokeWidth={pendingDelete ? 2.5 : 1.8} />
           </button>
           <button
             onClick={onEdit}
-            className="h-10 px-5 bg-emerald-600 text-white text-sm font-semibold rounded-xl active:bg-emerald-700 flex items-center gap-1.5"
+            className="h-10 px-5 bg-accent text-inverted text-sm font-semibold rounded-xl active:bg-accent-hover flex items-center gap-1.5"
           >
             <Pencil size={14} />
             Editar

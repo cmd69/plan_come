@@ -3,26 +3,102 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Surfaces */
+  --color-page: #f9fafb;
+  --color-surface: #ffffff;
+  --color-surface-alt: #f9fafb;
+  --color-elevated: #ffffff;
+
+  /* Text */
+  --color-text-primary: #111827;
+  --color-text-secondary: #374151;
+  --color-text-tertiary: #4b5563;
+  --color-text-muted: #6b7280;
+  --color-text-faint: #9ca3af;
+  --color-text-dimmed: #d1d5db;
+  --color-text-inverted: #ffffff;
+
+  /* Borders */
+  --color-border-default: #e5e7eb;
+  --color-border-subtle: #f3f4f6;
+  --color-border-strong: #d1d5db;
+
+  /* Accent (emerald) */
+  --color-accent: #059669;
+  --color-accent-hover: #047857;
+  --color-accent-soft: #ecfdf5;
+  --color-accent-text: #047857;
+  --color-accent-muted: #d1fae5;
+
+  /* Danger */
+  --color-danger: #dc2626;
+  --color-danger-hover: #b91c1c;
+  --color-danger-soft: #fef2f2;
+  --color-danger-text: #dc2626;
+  --color-danger-border: #fecaca;
+
+  /* Input */
+  --color-input-bg: #f9fafb;
+  --color-input-focus: #ffffff;
+
+  /* Overlay */
+  --color-overlay: rgba(0, 0, 0, 0.4);
+
+  /* Pressed states */
+  --color-pressed: #f3f4f6;
+  --color-pressed-strong: #e5e7eb;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.dark {
+  /* Base: Dusty Coal #222222 — fondos en gradación */
+  --color-page: #222222;
+  --color-surface: #282828;
+  --color-surface-alt: #2e2e2e;
+  --color-elevated: #353535;
+
+  --color-text-primary: #f0f0f0;
+  --color-text-secondary: #c9c9c9;
+  --color-text-tertiary: #a8a8a8;
+  --color-text-muted: #909090;
+  --color-text-faint: #6e6e6e;
+  --color-text-dimmed: #505050;
+  --color-text-inverted: #222222;
+
+  /* Bordes derivados de Dusty Coal */
+  --color-border-default: #383838;
+  --color-border-subtle: #2e2e2e;
+  --color-border-strong: #454545;
+
+  --color-accent: #10b981;
+  --color-accent-hover: #059669;
+  --color-accent-soft: rgba(16, 185, 129, 0.14);
+  --color-accent-text: #6ee7b7;
+  --color-accent-muted: rgba(16, 185, 129, 0.22);
+
+  --color-danger: #ef4444;
+  --color-danger-hover: #dc2626;
+  --color-danger-soft: rgba(239, 68, 68, 0.14);
+  --color-danger-text: #fca5a5;
+  --color-danger-border: rgba(239, 68, 68, 0.28);
+
+  --color-input-bg: #2e2e2e;
+  --color-input-focus: #353535;
+
+  --color-overlay: rgba(0, 0, 0, 0.5);
+
+  --color-pressed: #2e2e2e;
+  --color-pressed-strong: #383838;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--color-page);
+  color: var(--color-text-primary);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   -webkit-user-select: none;
   user-select: none;
 }
 
-input, textarea {
+input, textarea, select {
   -webkit-user-select: text;
   user-select: text;
 }

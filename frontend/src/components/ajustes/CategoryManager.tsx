@@ -178,12 +178,12 @@ export default function CategoryManager({ categories }: CategoryManagerProps) {
   return (
     <div>
       <div className="flex items-center justify-between px-4 py-3">
-        <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wider">
+        <h2 className="text-sm font-bold text-secondary uppercase tracking-wider">
           Categorías de productos
         </h2>
         <button
           onClick={() => setFormCategory(null)}
-          className="flex items-center gap-1 text-xs font-semibold text-emerald-600 active:text-emerald-700"
+          className="flex items-center gap-1 text-xs font-semibold text-accent-text active:text-accent-text"
         >
           <Plus size={14} />
           Nueva
@@ -212,9 +212,9 @@ export default function CategoryManager({ categories }: CategoryManagerProps) {
                 else rowRefs.current.delete(cat.id);
               }}
               className={cn(
-                "flex items-center gap-3 px-4 py-3 bg-white border-b border-gray-100 transition-all duration-100",
-                isDragged && "bg-emerald-50 shadow-md scale-[1.02] z-10 relative",
-                isOver && "border-t-2 border-t-emerald-400"
+                "flex items-center gap-3 px-4 py-3 bg-surface border-b border-border-subtle transition-all duration-100",
+                isDragged && "bg-accent-soft shadow-md scale-[1.02] z-10 relative",
+                isOver && "border-t-2 border-t-accent"
               )}
             >
               {/* Drag handle — long press to drag */}
@@ -229,7 +229,7 @@ export default function CategoryManager({ categories }: CategoryManagerProps) {
                   size={18}
                   className={cn(
                     "transition-colors",
-                    isDragged ? "text-emerald-500" : "text-gray-400"
+                    isDragged ? "text-accent-text" : "text-faint"
                   )}
                 />
               </div>
@@ -239,10 +239,10 @@ export default function CategoryManager({ categories }: CategoryManagerProps) {
 
               {/* Label + slug */}
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">
+                <p className="text-sm font-medium text-primary truncate">
                   {cat.label}
                 </p>
-                <p className="text-xs text-gray-400 font-mono truncate">
+                <p className="text-xs text-faint font-mono truncate">
                   {cat.slug}
                 </p>
               </div>
@@ -252,7 +252,7 @@ export default function CategoryManager({ categories }: CategoryManagerProps) {
                 <>
                   <button
                     onClick={() => setFormCategory(cat)}
-                    className="w-10 h-10 flex items-center justify-center text-gray-400 active:text-gray-700"
+                    className="w-10 h-10 flex items-center justify-center text-faint active:text-secondary"
                   >
                     <Pencil size={16} />
                   </button>
@@ -261,8 +261,8 @@ export default function CategoryManager({ categories }: CategoryManagerProps) {
                     className={cn(
                       "w-10 h-10 flex items-center justify-center transition-colors",
                       pendingDeleteId === cat.id
-                        ? "text-red-500"
-                        : "text-gray-400 active:text-red-500"
+                        ? "text-danger-text"
+                        : "text-faint active:text-danger-text"
                     )}
                   >
                     <Trash2
@@ -278,12 +278,12 @@ export default function CategoryManager({ categories }: CategoryManagerProps) {
       </div>
 
       {localOrder.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-12 text-gray-400 gap-3">
+        <div className="flex flex-col items-center justify-center py-12 text-faint gap-3">
           <span className="text-3xl">🏷️</span>
           <p className="text-sm">No hay categorías</p>
           <button
             onClick={() => setFormCategory(null)}
-            className="px-4 py-2 bg-emerald-600 text-white text-sm font-semibold rounded-xl active:bg-emerald-700"
+            className="px-4 py-2 bg-accent text-inverted text-sm font-semibold rounded-xl active:bg-accent-hover"
           >
             Crear la primera
           </button>

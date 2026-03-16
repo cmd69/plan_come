@@ -19,7 +19,7 @@ export default function LogoutButton() {
     <button
       onClick={handleLogout}
       disabled={loading}
-      className="w-full h-12 rounded-xl border border-red-200 text-red-600 font-medium text-base flex items-center justify-center gap-2 active:bg-red-50 disabled:opacity-50 transition-colors"
+      className="w-full h-12 rounded-xl border border-danger-border text-danger-text font-medium text-base flex items-center justify-center gap-2 active:bg-danger-soft disabled:opacity-50 transition-colors"
     >
       <LogOut size={18} />
       {loading ? "Cerrando sesión..." : "Cerrar sesión"}

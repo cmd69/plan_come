@@ -80,9 +80,9 @@ export default function ProductCard({
   return (
     <div
       className={cn(
-        "flex items-center gap-3 px-4 py-3 bg-white border-b border-gray-100 transition-colors",
+        "flex items-center gap-3 px-4 py-3 bg-surface border-b border-border-subtle transition-colors",
         selectionMode && "cursor-pointer select-none",
-        isSelected && "bg-emerald-50"
+        isSelected && "bg-accent-soft"
       )}
       onPointerDown={selectionMode ? undefined : handlePointerDown}
       onPointerUp={selectionMode ? undefined : handlePointerUp}
@@ -95,8 +95,8 @@ export default function ProductCard({
           className={cn(
             "w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors",
             isSelected
-              ? "bg-emerald-600 border-emerald-600 text-white"
-              : "border-gray-300"
+              ? "bg-accent border-accent text-inverted"
+              : "border-border-strong"
           )}
         >
           {isSelected && <Check size={14} strokeWidth={3} />}
@@ -108,7 +108,7 @@ export default function ProductCard({
         {product.icon && (
           <span className="text-xl shrink-0">{product.icon}</span>
         )}
-        <span className="text-base font-medium text-gray-900 truncate">
+        <span className="text-base font-medium text-primary truncate">
           {product.name}
         </span>
         {product.priority > 0 && (
@@ -128,8 +128,8 @@ export default function ProductCard({
               className={cn(
                 "w-11 h-11 flex items-center justify-center rounded-full border text-xl font-semibold transition-colors",
                 optimisticUnits === 0
-                  ? "border-gray-200 text-gray-300"
-                  : "border-gray-300 text-gray-700 active:bg-gray-100"
+                  ? "border-border-default text-dimmed"
+                  : "border-border-strong text-secondary active:bg-pressed"
               )}
               aria-label="Restar unidad"
             >
@@ -138,14 +138,14 @@ export default function ProductCard({
             <span
               className={cn(
                 "w-8 text-center text-lg font-bold tabular-nums",
-                optimisticUnits === 0 ? "text-red-500" : "text-gray-900"
+                optimisticUnits === 0 ? "text-danger-text" : "text-primary"
               )}
             >
               {optimisticUnits}
             </span>
             <button
               onClick={() => handleUnit(1)}
-              className="w-11 h-11 flex items-center justify-center rounded-full border border-gray-300 text-xl font-semibold text-gray-700 active:bg-gray-100 transition-colors"
+              className="w-11 h-11 flex items-center justify-center rounded-full border border-border-strong text-xl font-semibold text-secondary active:bg-pressed transition-colors"
               aria-label="Sumar unidad"
             >
               +
@@ -156,7 +156,7 @@ export default function ProductCard({
           <div className="flex items-center gap-1 ml-1">
             <button
               onClick={() => onEdit(product)}
-              className="w-10 h-10 flex items-center justify-center text-gray-400 active:text-gray-700"
+              className="w-10 h-10 flex items-center justify-center text-faint active:text-secondary"
               aria-label="Editar"
             >
               <Pencil size={17} />
@@ -166,7 +166,7 @@ export default function ProductCard({
               onClick={handleDeleteTap}
               className={cn(
                 "w-10 h-10 flex items-center justify-center transition-colors",
-                pendingDelete ? "text-red-500" : "text-gray-400 active:text-red-500"
+                pendingDelete ? "text-danger-text" : "text-faint active:text-danger-text"
               )}
               aria-label={pendingDelete ? "Confirmar eliminación" : "Eliminar"}
             >

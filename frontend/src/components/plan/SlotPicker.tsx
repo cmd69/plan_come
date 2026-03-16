@@ -40,14 +40,14 @@ export default function SlotPicker({ dishes, meal, onSelect, onClose }: SlotPick
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/40 z-[70]" onClick={onClose} />
+      <div className="fixed inset-0 bg-overlay z-[70]" onClick={onClose} />
 
-      <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl z-[80] max-h-[80vh] flex flex-col">
+      <div className="fixed bottom-0 left-0 right-0 bg-surface rounded-t-2xl z-[80] max-h-[80vh] flex flex-col">
         <div className="flex items-center justify-between px-4 pt-4 pb-2 shrink-0">
-          <h2 className="text-lg font-semibold text-gray-900">Elegir plato</h2>
+          <h2 className="text-lg font-semibold text-primary">Elegir plato</h2>
           <button
             onClick={onClose}
-            className="w-9 h-9 flex items-center justify-center text-gray-400"
+            className="w-9 h-9 flex items-center justify-center text-faint"
           >
             <X size={20} />
           </button>
@@ -55,14 +55,14 @@ export default function SlotPicker({ dishes, meal, onSelect, onClose }: SlotPick
 
         {/* Search */}
         <div className="px-4 pb-3">
-          <div className="flex items-center gap-2 h-10 px-3 rounded-xl bg-gray-100">
-            <Search size={16} className="text-gray-400 shrink-0" />
+          <div className="flex items-center gap-2 h-10 px-3 rounded-xl bg-pressed">
+            <Search size={16} className="text-faint shrink-0" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Buscar plato..."
-              className="flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400"
+              className="flex-1 bg-transparent text-sm outline-none placeholder:text-faint"
             />
           </div>
         </div>
@@ -71,7 +71,7 @@ export default function SlotPicker({ dishes, meal, onSelect, onClose }: SlotPick
         <div className="px-4 pb-2">
           <button
             onClick={() => onSelect(null)}
-            className="w-full text-left px-3 py-2.5 rounded-xl text-sm text-gray-500 bg-gray-50 active:bg-gray-100"
+            className="w-full text-left px-3 py-2.5 rounded-xl text-sm text-muted bg-surface-alt active:bg-pressed"
           >
             Dejar vacío
           </button>
@@ -80,25 +80,25 @@ export default function SlotPicker({ dishes, meal, onSelect, onClose }: SlotPick
         {/* Dish list */}
         <div className="flex-1 overflow-y-auto px-4 pb-6">
           {grouped.length === 0 ? (
-            <p className="text-sm text-gray-400 text-center py-8">
+            <p className="text-sm text-faint text-center py-8">
               No se encontraron platos
             </p>
           ) : (
             grouped.map(({ type, label, emoji, dishes: typeDishes }) => (
               <div key={type} className="mb-3">
-                <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-1.5 flex items-center gap-1">
+                <p className="text-xs font-bold uppercase tracking-wider text-muted mb-1.5 flex items-center gap-1">
                   <span>{emoji}</span> {label}
                 </p>
                 {typeDishes.map((dish) => (
                   <button
                     key={dish.id}
                     onClick={() => onSelect(dish.id)}
-                    className="w-full text-left px-3 py-3 rounded-xl text-sm font-medium text-gray-800 active:bg-emerald-50 active:text-emerald-700 flex items-center gap-2"
+                    className="w-full text-left px-3 py-3 rounded-xl text-sm font-medium text-primary active:bg-accent-soft active:text-accent-text flex items-center gap-2"
                   >
                     <span>{dish.emoji || "🍽️"}</span>
                     <span className="flex-1">{dish.name}</span>
                     {!dish.active && (
-                      <span className="text-[10px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full">
+                      <span className="text-[10px] text-faint bg-pressed px-1.5 py-0.5 rounded-full">
                         inactivo
                       </span>
                     )}

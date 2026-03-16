@@ -18,14 +18,14 @@ export const PRIORITY_ICONS: Record<number, string> = {
 };
 
 export const PRIORITY_COLORS: Record<number, string> = {
-  0: "text-gray-400",
+  0: "text-faint",
   1: "text-blue-500",
   2: "text-amber-500",
-  3: "text-red-500",
+  3: "text-danger-text",
 };
 
 export const PRIORITY_BG: Record<number, string> = {
-  0: "bg-gray-100 text-gray-500",
+  0: "bg-surface-alt text-muted",
   1: "bg-blue-50 text-blue-600",
   2: "bg-amber-50 text-amber-600",
   3: "bg-red-50 text-red-600",
