@@ -35,10 +35,9 @@ export default function ProductGrid({ products, categories, initialCategory, onE
       {!activeCategory ? (
         <div className="grid grid-cols-3 gap-3">
           {categoriesWithProducts.map((slug) => {
-            const count = products.filter((p) => p.category === slug).length;
-            const zeroCount = products.filter(
-              (p) => p.category === slug && p.units === 0
-            ).length;
+            const catProducts = products.filter((p) => p.category === slug);
+            const total = catProducts.length;
+            const inStock = catProducts.filter((p) => p.units > 0).length;
             return (
               <button
                 key={slug}
@@ -49,12 +48,9 @@ export default function ProductGrid({ products, categories, initialCategory, onE
                 <span className="text-xs font-medium text-gray-700 text-center leading-tight">
                   {labels[slug] ?? slug}
                 </span>
-                <span className="text-[10px] text-gray-400">{count}</span>
-                {zeroCount > 0 && (
-                  <span className="absolute top-2 right-2 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                    {zeroCount}
-                  </span>
-                )}
+                <span className={cn("text-[10px] font-medium", inStock === total ? "text-emerald-600" : "text-gray-400")}>
+                  {inStock}/{total}
+                </span>
               </button>
             );
           })}
