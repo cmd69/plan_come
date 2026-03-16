@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import crypto from "crypto";
 
 const COOKIE_NAME = "plancome_session";
 
@@ -7,29 +6,42 @@ function getSecret(): string {
   return process.env.AUTH_SECRET || "default-dev-secret";
 }
 
-function verify(signed: string): string | null {
+async function hmacSign(data: string, secret: string): Promise<string> {
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    enc.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  const sig = await crypto.subtle.sign("HMAC", key, enc.encode(data));
+  return Array.from(new Uint8Array(sig))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+async function verify(signed: string): Promise<string | null> {
   const idx = signed.lastIndexOf(".");
   if (idx === -1) return null;
   const value = signed.slice(0, idx);
-  const hmac = crypto.createHmac("sha256", getSecret());
-  hmac.update(value);
-  const expected = `${value}.${hmac.digest("hex")}`;
+  const expected = `${value}.${await hmacSign(value, getSecret())}`;
   if (expected === signed) return value;
   return null;
 }
 
-function isTokenValid(token: string): boolean {
-  const raw = verify(token);
+async function isTokenValid(token: string): Promise<boolean> {
+  const raw = await verify(token);
   if (!raw) return false;
   try {
-    const payload = JSON.parse(Buffer.from(raw, "base64").toString());
+    const payload = JSON.parse(atob(raw));
     return typeof payload.exp === "number" && payload.exp > Date.now();
   } catch {
     return false;
   }
 }
 
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Allow login page and auth API routes
@@ -39,7 +51,7 @@ export function middleware(req: NextRequest) {
 
   const token = req.cookies.get(COOKIE_NAME)?.value;
 
-  if (!token || !isTokenValid(token)) {
+  if (!token || !(await isTokenValid(token))) {
     const loginUrl = new URL("/login", req.url);
     return NextResponse.redirect(loginUrl);
   }
