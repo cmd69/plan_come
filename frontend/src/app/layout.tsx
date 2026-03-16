@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import BottomNav from "@/components/nav/BottomNav";
+import NavWrapper from "@/components/nav/NavWrapper";
 
 export const metadata: Metadata = {
   title: "PlanCome",
@@ -15,8 +15,7 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className="min-h-screen bg-gray-50 text-gray-900">
-        <main className="pb-16">{children}</main>
-        <BottomNav />
+        <NavWrapper>{children}</NavWrapper>
       </body>
     </html>
   );

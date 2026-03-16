@@ -1,5 +1,6 @@
 import { getCategories } from "@/actions/categories";
 import CategoryManager from "@/components/ajustes/CategoryManager";
+import LogoutButton from "@/components/ajustes/LogoutButton";
 
 export default async function AjustesPage() {
   const categories = await getCategories();
@@ -10,6 +11,9 @@ export default async function AjustesPage() {
         <h1 className="text-xl font-bold text-gray-900">Ajustes</h1>
       </header>
       <CategoryManager categories={categories} />
+      <div className="px-4 mt-6 mb-8">
+        <LogoutButton />
+      </div>
     </div>
   );
 }
