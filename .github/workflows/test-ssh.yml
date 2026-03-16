@@ -1,0 +1,30 @@
+# =============================================================================
+# Test SSH: comprobar conexión al servidor
+# =============================================================================
+# - En cada PR contra main: se ejecuta en paralelo con PR checks.
+# - Manual: Actions → Test SSH → Run workflow.
+# =============================================================================
+name: Test SSH
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-ssh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH connection test
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            echo "✅ Conexión SSH correcta"
+            echo "Host: $(hostname)"
+            echo "Usuario: $(whoami)"
+            echo "Directorio deploy (PROD_PATH): $HOME/${{ secrets.PROD_PATH }}"
+            test -d "$HOME/${{ secrets.PROD_PATH }}" && echo "✅ Directorio de deploy existe" || echo "⚠️ Directorio de deploy no encontrado"
