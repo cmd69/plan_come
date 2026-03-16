@@ -205,16 +205,11 @@ export default function WeekPlanView({ initialPlan, dishes }: WeekPlanViewProps)
         })}
       </div>
 
-      {/* Empty state hint */}
-      {filledSlots === 0 && !isPending && (
+      {/* Empty state hint — only when no dishes exist */}
+      {filledSlots === 0 && !isPending && activeDishes.length === 0 && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ top: 140 }}>
           <div className="text-center text-gray-400 px-8">
-            <p className="text-4xl mb-3">📋</p>
-            <p className="text-sm">
-              {activeDishes.length === 0
-                ? "Añade platos en el catálogo para poder generar un plan"
-                : "Pulsa Generar para crear el plan de la semana"}
-            </p>
+            <p className="text-sm">Añade platos en el catálogo para poder generar un plan</p>
           </div>
         </div>
       )}

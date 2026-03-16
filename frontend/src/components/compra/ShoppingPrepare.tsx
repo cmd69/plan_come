@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useTransition } from "react";
+import { useState, useMemo, useTransition, useEffect, useCallback } from "react";
 import { ChevronLeft, ShoppingCart, Check, Undo2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Product, Category } from "@prisma/client";
@@ -32,6 +32,25 @@ export default function ShoppingPrepare({
     () => buildCategoryMaps(categories),
     [categories]
   );
+
+  const openCategory = useCallback((slug: string) => {
+    setActiveCategory(slug);
+    history.pushState({ gridCategory: slug }, "");
+  }, []);
+
+  const closeCategory = useCallback(() => {
+    setActiveCategory(null);
+  }, []);
+
+  useEffect(() => {
+    function onPopState(e: PopStateEvent) {
+      if (activeCategory && !e.state?.gridCategory) {
+        setActiveCategory(null);
+      }
+    }
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, [activeCategory]);
 
   const categoriesWithProducts = order.filter((slug) =>
     products.some((p) => p.category === slug)
@@ -100,7 +119,7 @@ export default function ShoppingPrepare({
                 return (
                   <button
                     key={slug}
-                    onClick={() => setActiveCategory(slug)}
+                    onClick={() => openCategory(slug)}
                     className="relative flex flex-col items-center justify-center gap-1.5 p-4 rounded-2xl bg-gray-50 border border-gray-200 active:bg-gray-100 aspect-square"
                   >
                     {selectedInCat > 0 && (
@@ -121,7 +140,7 @@ export default function ShoppingPrepare({
             /* ── Product grid within category ── */
             <>
               <button
-                onClick={() => setActiveCategory(null)}
+                onClick={() => { closeCategory(); history.back(); }}
                 className="flex items-center gap-1 text-sm font-medium text-gray-600 mb-3 active:text-gray-800"
               >
                 <ChevronLeft size={18} />
@@ -189,7 +208,7 @@ export default function ShoppingPrepare({
                 })}
                 {/* Back card */}
                 <button
-                  onClick={() => setActiveCategory(null)}
+                  onClick={() => { closeCategory(); history.back(); }}
                   className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-300 p-3 gap-1 aspect-square text-gray-400 active:bg-gray-50"
                 >
                   <Undo2 size={22} />

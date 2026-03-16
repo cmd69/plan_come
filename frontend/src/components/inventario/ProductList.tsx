@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useTransition } from "react";
+import { useState, useMemo, useTransition, useCallback } from "react";
 import { Plus, ChevronDown, ArrowDownAZ, ArrowUpAZ, ArrowDown01, ArrowUp10, SmilePlus, Smile, List, LayoutGrid, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Product, Category } from "@prisma/client";
@@ -10,6 +10,7 @@ import ProductForm from "./ProductForm";
 import ImportProducts from "./ImportProducts";
 import ProductGrid from "./ProductGrid";
 import { resetAllUnits } from "@/actions/products";
+import { useModalHistory } from "@/lib/useModalHistory";
 
 type SortKey = "alpha" | "icon" | "units";
 type SortDir = "asc" | "desc";
@@ -56,6 +57,13 @@ export default function ProductList({ products, categories, initialCategory }: P
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [isPending, startTransition] = useTransition();
+
+  const dismissForm = useCallback(() => {
+    setFormProduct(undefined);
+    setDefaultCategory(undefined);
+  }, []);
+
+  const closeForm = useModalHistory(formProduct !== undefined, dismissForm);
 
   const { labels, emojis, order } = useMemo(
     () => buildCategoryMaps(categories),
@@ -254,7 +262,7 @@ export default function ProductList({ products, categories, initialCategory }: P
           product={formProduct}
           categories={categories}
           defaultCategory={defaultCategory}
-          onClose={() => { setFormProduct(undefined); setDefaultCategory(undefined); }}
+          onClose={closeForm}
         />
       )}
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useTransition, useRef } from "react";
+import { useState, useMemo, useTransition, useRef, useEffect, useCallback } from "react";
 import { ChevronLeft, Minus, Plus, Pencil, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Product, Category } from "@prisma/client";
@@ -22,6 +22,27 @@ export default function ProductGrid({ products, categories, initialCategory, onE
     [categories]
   );
 
+  const openCategory = useCallback((slug: string) => {
+    setActiveCategory(slug);
+    history.pushState({ gridCategory: slug }, "");
+  }, []);
+
+  const closeCategory = useCallback(() => {
+    setActiveCategory(null);
+  }, []);
+
+  useEffect(() => {
+    function onPopState(e: PopStateEvent) {
+      // Only close category when navigating back past the category entry
+      // (ignore popstate from modal/other history entries)
+      if (activeCategory && !e.state?.gridCategory) {
+        setActiveCategory(null);
+      }
+    }
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, [activeCategory]);
+
   const categoriesWithProducts = order.filter((slug) =>
     products.some((p) => p.category === slug)
   );
@@ -41,7 +62,7 @@ export default function ProductGrid({ products, categories, initialCategory, onE
             return (
               <button
                 key={slug}
-                onClick={() => setActiveCategory(slug)}
+                onClick={() => openCategory(slug)}
                 className="relative flex flex-col items-center justify-center gap-1.5 p-4 rounded-2xl bg-gray-50 border border-gray-200 active:bg-gray-100 aspect-square"
               >
                 {inStock > 0 && (
@@ -61,7 +82,7 @@ export default function ProductGrid({ products, categories, initialCategory, onE
       ) : (
         <>
           <button
-            onClick={() => setActiveCategory(null)}
+            onClick={() => { closeCategory(); history.back(); }}
             className="flex items-center gap-1 text-sm font-medium text-gray-600 mb-3 active:text-gray-800"
           >
             <ChevronLeft size={18} />

@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Plus, ChevronDown, Grid3X3, List } from "lucide-react";
 import type { Product, Category } from "@prisma/client";
 import { DISH_TYPE_LABELS, DISH_TYPE_EMOJIS, DISH_TYPE_ORDER } from "@/lib/constants";
 import { cn } from "@/lib/utils";
+import { useModalHistory } from "@/lib/useModalHistory";
 import DishCard, { type DishFull } from "./DishCard";
 import DishDetailSheet from "./DishDetailSheet";
 import DishForm from "./DishForm";
@@ -22,6 +23,12 @@ export default function DishList({ dishes, products, categories }: DishListProps
   const [detailDish, setDetailDish] = useState<DishFull | null>(null);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const [view, setView] = useState<"grid" | "list">("grid");
+
+  const dismissDetail = useCallback(() => setDetailDish(null), []);
+  const closeDetail = useModalHistory(detailDish !== null, dismissDetail);
+
+  const dismissForm = useCallback(() => { setFormDish(undefined); setFormType(undefined); }, []);
+  const closeForm = useModalHistory(formDish !== undefined, dismissForm);
 
   function toggleSection(section: string) {
     setCollapsed((prev) => {
@@ -219,8 +226,8 @@ export default function DishList({ dishes, products, categories }: DishListProps
       {detailDish && (
         <DishDetailSheet
           dish={detailDish}
-          onEdit={() => { setDetailDish(null); setFormDish(detailDish); }}
-          onClose={() => setDetailDish(null)}
+          onEdit={() => { dismissDetail(); setFormDish(detailDish); }}
+          onClose={closeDetail}
         />
       )}
 
@@ -231,7 +238,7 @@ export default function DishList({ dishes, products, categories }: DishListProps
           allDishes={dishes}
           products={products}
           categories={categories}
-          onClose={() => { setFormDish(undefined); setFormType(undefined); }}
+          onClose={closeForm}
         />
       )}
     </>

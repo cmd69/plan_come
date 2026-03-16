@@ -370,8 +370,12 @@ export async function regenerateSlot(
   // Get all slots for this week
   const slots = await prisma.planSlot.findMany({ where: { weekPlanId } });
 
-  // Collect used dish IDs (excluding the slot being regenerated) and deduct their stock
+  // Collect used dish IDs and deduct stock for other slots.
+  // The current slot's dish is excluded from stock deduction but still added to usedDishIds
+  // so it cannot be suggested again.
+  const currentSlot = slots.find((s) => s.day === day && s.meal === meal);
   const usedDishIds = new Set<number>();
+  if (currentSlot?.dishId) usedDishIds.add(currentSlot.dishId);
   for (const slot of slots) {
     if (slot.dishId && !(slot.day === day && slot.meal === meal)) {
       usedDishIds.add(slot.dishId);
