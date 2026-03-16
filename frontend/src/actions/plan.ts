@@ -61,13 +61,13 @@ export async function loadWeekPlan(weekStartISO: string) {
   return getOrCreateWeekPlan(weekStart);
 }
 
-/** Check if a set of required ingredients are all available */
-function isDishIngredientsAvailable(
-  ingredients: { group: string | null; groupMin: number; product: { units: number }; quantity: number }[]
-) {
+type IngredientInfo = { group: string | null; groupMin: number; productId: number; quantity: number };
+
+/** Check if ingredients are available against a virtual stock map */
+function checkIngredients(ingredients: IngredientInfo[], stock: Map<number, number>): boolean {
   if (ingredients.length === 0) return true;
   const standalone = ingredients.filter((i) => !i.group);
-  const groups = new Map<string, typeof ingredients>();
+  const groups = new Map<string, IngredientInfo[]>();
   for (const ing of ingredients) {
     if (ing.group) {
       const list = groups.get(ing.group) ?? [];
@@ -76,23 +76,82 @@ function isDishIngredientsAvailable(
     }
   }
   return (
-    standalone.every((i) => i.product.units >= i.quantity) &&
+    standalone.every((i) => (stock.get(i.productId) ?? 0) >= i.quantity) &&
     [...groups.values()].every((members) => {
       const min = members[0]?.groupMin ?? 1;
-      return members.filter((i) => i.product.units >= i.quantity).length >= min;
+      return members.filter((i) => (stock.get(i.productId) ?? 0) >= i.quantity).length >= min;
     })
   );
 }
 
-/** Generate a full week plan: fill all empty slots with available dishes */
-export async function generateWeekPlan(weekStartISO: string) {
-  const weekStart = new Date(weekStartISO);
-  weekStart.setHours(0, 0, 0, 0);
+/** Deduct ingredient quantities from virtual stock */
+function deductIngredients(ingredients: IngredientInfo[], stock: Map<number, number>) {
+  // For standalone: deduct all
+  const standalone = ingredients.filter((i) => !i.group);
+  for (const i of standalone) {
+    stock.set(i.productId, (stock.get(i.productId) ?? 0) - i.quantity);
+  }
+  // For groups: deduct only the first available member(s) up to groupMin
+  const groups = new Map<string, IngredientInfo[]>();
+  for (const ing of ingredients) {
+    if (ing.group) {
+      const list = groups.get(ing.group) ?? [];
+      list.push(ing);
+      groups.set(ing.group, list);
+    }
+  }
+  for (const members of groups.values()) {
+    const min = members[0]?.groupMin ?? 1;
+    let picked = 0;
+    for (const m of members) {
+      if (picked >= min) break;
+      if ((stock.get(m.productId) ?? 0) >= m.quantity) {
+        stock.set(m.productId, (stock.get(m.productId) ?? 0) - m.quantity);
+        picked++;
+      }
+    }
+  }
+}
 
-  const plan = await getOrCreateWeekPlan(weekStart);
+/** Collect all ingredient infos for a dish (own + sides) */
+function getDishIngredients(dish: DishWithIngredients): IngredientInfo[] {
+  const own: IngredientInfo[] = dish.ingredients.map((i) => ({
+    group: i.group,
+    groupMin: i.groupMin,
+    productId: i.productId,
+    quantity: i.quantity,
+  }));
 
-  // Get active main dishes (not ACOMPANANTE) with ingredients and sides
-  const dishes = await prisma.dish.findMany({
+  const sideIngs: IngredientInfo[] = [];
+  const sideGroups = new Map<string, typeof dish.sides>();
+  for (const s of dish.sides) {
+    const g = s.group ?? "A";
+    const list = sideGroups.get(g) ?? [];
+    list.push(s);
+    sideGroups.set(g, list);
+  }
+  // For each side group, pick the first available side and include its ingredients
+  for (const members of sideGroups.values()) {
+    for (const s of members) {
+      for (const i of s.side.ingredients) {
+        sideIngs.push({
+          group: i.group,
+          groupMin: i.groupMin,
+          productId: i.productId,
+          quantity: i.quantity,
+        });
+      }
+      break; // Take first side per group for deduction estimate
+    }
+  }
+
+  return [...own, ...sideIngs];
+}
+
+type DishWithIngredients = Awaited<ReturnType<typeof fetchDishesWithIngredients>>[number];
+
+async function fetchDishesWithIngredients() {
+  return prisma.dish.findMany({
     where: { active: true, type: { not: "ACOMPANANTE" } },
     include: {
       ingredients: {
@@ -113,37 +172,65 @@ export async function generateWeekPlan(weekStartISO: string) {
       },
     },
   });
+}
 
-  // Filter to dishes whose required ingredients all have enough stock
-  // For grouped ingredients: at least 1 in the group must have stock
-  // For sides: same logic per side, and for side groups at least 1 must be available
-  const availableDishes = dishes.filter((dish) => {
-    // Check own ingredients
-    const ownOk = isDishIngredientsAvailable(dish.ingredients);
-    if (!ownOk) return false;
+/** Check if a dish is available against virtual stock (own + sides) */
+function isDishAvailable(dish: DishWithIngredients, stock: Map<number, number>): boolean {
+  const ownIngs: IngredientInfo[] = dish.ingredients.map((i) => ({
+    group: i.group, groupMin: i.groupMin, productId: i.productId, quantity: i.quantity,
+  }));
+  if (!checkIngredients(ownIngs, stock)) return false;
 
-    // Check sides availability (sides always in groups)
-    const sideGroups = new Map<string, typeof dish.sides>();
-    for (const s of dish.sides) {
-      const g = s.group ?? "A";
-      const list = sideGroups.get(g) ?? [];
-      list.push(s);
-      sideGroups.set(g, list);
-    }
-    return [...sideGroups.values()].every((members) => {
-      const min = members[0]?.groupMin ?? 1;
-      return members.filter((s) => isDishIngredientsAvailable(s.side.ingredients)).length >= min;
-    });
+  const sideGroups = new Map<string, typeof dish.sides>();
+  for (const s of dish.sides) {
+    const g = s.group ?? "A";
+    const list = sideGroups.get(g) ?? [];
+    list.push(s);
+    sideGroups.set(g, list);
+  }
+  return [...sideGroups.values()].every((members) => {
+    const min = members[0]?.groupMin ?? 1;
+    return members.filter((s) => {
+      const sideIngs: IngredientInfo[] = s.side.ingredients.map((i) => ({
+        group: i.group, groupMin: i.groupMin, productId: i.productId, quantity: i.quantity,
+      }));
+      return checkIngredients(sideIngs, stock);
+    }).length >= min;
   });
+}
 
-  if (availableDishes.length === 0) return plan;
+/** Generate a full week plan */
+export async function generateWeekPlan(weekStartISO: string) {
+  const weekStart = new Date(weekStartISO);
+  weekStart.setHours(0, 0, 0, 0);
 
-  // Existing slot dish IDs to know what's already assigned
+  const plan = await getOrCreateWeekPlan(weekStart);
+  const dishes = await fetchDishesWithIngredients();
+
+  // Build virtual stock from all products used in dish ingredients
+  const allProducts = await prisma.product.findMany({ select: { id: true, units: true } });
+  const stock = new Map(allProducts.map((p) => [p.id, p.units]));
+
   const existingSlots = new Map(
     plan.slots.map((s) => [`${s.day}-${s.meal}`, s])
   );
 
-  // Fill empty slots
+  // Track used dish IDs (including pre-existing ones) to prevent repeats
+  const usedDishIds = new Set<number>();
+  for (const slot of plan.slots) {
+    if (slot.dishId) usedDishIds.add(slot.dishId);
+  }
+
+  // Deduct stock for already-assigned dishes
+  for (const slot of plan.slots) {
+    if (slot.dishId) {
+      const dish = dishes.find((d) => d.id === slot.dishId);
+      if (dish) {
+        deductIngredients(getDishIngredients(dish), stock);
+      }
+    }
+  }
+
   for (const day of DAY_ORDER) {
     for (const meal of MEAL_ORDER) {
       const key = `${day}-${meal}`;
@@ -152,15 +239,41 @@ export async function generateWeekPlan(weekStartISO: string) {
       // Skip if slot already has a dish or is marked eaten out
       if (existing?.dishId || existing?.eatenOut) continue;
 
-      // Filter by meal type: COMIDA slots get COMIDA+MIXTO, CENA slots get CENA+MIXTO
-      const mealDishes = availableDishes.filter((d) =>
-        d.type === "MIXTO" || d.type === meal
-      );
-      if (mealDishes.length === 0) continue;
+      // Saturday and Sunday default to eaten out
+      if (day === "SABADO" || day === "DOMINGO") {
+        if (existing) {
+          await prisma.planSlot.update({
+            where: { id: existing.id },
+            data: { eatenOut: true, dishId: null },
+          });
+        } else {
+          await prisma.planSlot.create({
+            data: {
+              weekPlanId: plan.id,
+              day: day as DayOfWeek,
+              meal: meal as MealType,
+              eatenOut: true,
+            },
+          });
+        }
+        continue;
+      }
 
-      // Pick a random available dish
-      const dish =
-        mealDishes[Math.floor(Math.random() * mealDishes.length)];
+      // Filter: correct meal type, not already used, available with current stock
+      const candidates = dishes.filter((d) =>
+        (d.type === "MIXTO" || d.type === meal) &&
+        !usedDishIds.has(d.id) &&
+        isDishAvailable(d, stock)
+      );
+
+      if (candidates.length === 0) continue; // Leave blank
+
+      // Pick random
+      const dish = candidates[Math.floor(Math.random() * candidates.length)];
+      usedDishIds.add(dish.id);
+
+      // Deduct ingredients from virtual stock
+      deductIngredients(getDishIngredients(dish), stock);
 
       if (existing) {
         await prisma.planSlot.update({
@@ -242,53 +355,49 @@ export async function clearWeekPlan(weekPlanId: number) {
   revalidatePath("/plan");
 }
 
-/** Regenerate a single slot with a random available dish */
+/** Regenerate a single slot with a random available dish (respects stock & no repeats) */
 export async function regenerateSlot(
   weekPlanId: number,
   day: DayOfWeek,
   meal: MealType
 ) {
-  // Filter by meal type: COMIDA slots get COMIDA+MIXTO, CENA slots get CENA+MIXTO
-  const dishes = await prisma.dish.findMany({
-    where: { active: true, type: { in: [meal, "MIXTO"] } },
-    include: {
-      ingredients: {
-        where: { optional: false },
-        include: { product: true },
-      },
-      sides: {
-        include: {
-          side: {
-            include: {
-              ingredients: {
-                where: { optional: false },
-                include: { product: true },
-              },
-            },
-          },
-        },
-      },
-    },
-  });
+  const allDishes = await fetchDishesWithIngredients();
 
-  const available = dishes.filter((dish) => {
-    if (!isDishIngredientsAvailable(dish.ingredients)) return false;
-    const sideGroups = new Map<string, typeof dish.sides>();
-    for (const s of dish.sides) {
-      const g = s.group ?? "A";
-      const list = sideGroups.get(g) ?? [];
-      list.push(s);
-      sideGroups.set(g, list);
+  // Build virtual stock
+  const allProducts = await prisma.product.findMany({ select: { id: true, units: true } });
+  const stock = new Map(allProducts.map((p) => [p.id, p.units]));
+
+  // Get all slots for this week
+  const slots = await prisma.planSlot.findMany({ where: { weekPlanId } });
+
+  // Collect used dish IDs (excluding the slot being regenerated) and deduct their stock
+  const usedDishIds = new Set<number>();
+  for (const slot of slots) {
+    if (slot.dishId && !(slot.day === day && slot.meal === meal)) {
+      usedDishIds.add(slot.dishId);
+      const dish = allDishes.find((d) => d.id === slot.dishId);
+      if (dish) deductIngredients(getDishIngredients(dish), stock);
     }
-    return [...sideGroups.values()].every((members) => {
-      const min = members[0]?.groupMin ?? 1;
-      return members.filter((s) => isDishIngredientsAvailable(s.side.ingredients)).length >= min;
+  }
+
+  const candidates = allDishes.filter((d) =>
+    (d.type === "MIXTO" || d.type === meal) &&
+    !usedDishIds.has(d.id) &&
+    isDishAvailable(d, stock)
+  );
+
+  if (candidates.length === 0) {
+    // Clear the slot if no candidates
+    await prisma.planSlot.upsert({
+      where: { weekPlanId_day_meal: { weekPlanId, day, meal } },
+      create: { weekPlanId, day, meal, dishId: null, eatenOut: false },
+      update: { dishId: null, eatenOut: false },
     });
-  });
+    revalidatePath("/plan");
+    return;
+  }
 
-  if (available.length === 0) return;
-
-  const dish = available[Math.floor(Math.random() * available.length)];
+  const dish = candidates[Math.floor(Math.random() * candidates.length)];
 
   await prisma.planSlot.upsert({
     where: { weekPlanId_day_meal: { weekPlanId, day, meal } },

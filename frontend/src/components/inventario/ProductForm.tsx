@@ -109,7 +109,7 @@ export default function ProductForm({ product, categories, defaultCategory, onCl
             <label className="text-sm font-medium text-gray-700">Prioridad</label>
             <input type="hidden" name="priority" value={priority} />
             <div className="flex gap-2">
-              {[0, 1, 2].map((p) => (
+              {[0, 1, 2, 3].map((p) => (
                 <button
                   key={p}
                   type="button"

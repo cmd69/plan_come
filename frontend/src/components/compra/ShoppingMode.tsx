@@ -4,7 +4,7 @@ import { useState, useMemo, useTransition } from "react";
 import { Check, Plus, Minus, X, ShoppingCart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Product, Category, ShoppingSession, ShoppingSessionItem } from "@prisma/client";
-import { buildCategoryMaps, PRIORITY_LABELS } from "@/lib/constants";
+import { buildCategoryMaps, PRIORITY_ICONS, PRIORITY_COLORS } from "@/lib/constants";
 import { toggleItem, updateItemQuantity, completeSession, cancelSession } from "@/actions/shopping";
 
 type SessionWithItems = ShoppingSession & {
@@ -156,9 +156,9 @@ export default function ShoppingMode({ session, categories, onAddMore }: Shoppin
                   {item.product.priority > 0 && !item.checked && (
                     <span className={cn(
                       "text-[9px] font-bold uppercase tracking-wide shrink-0",
-                      item.product.priority === 2 ? "text-red-500" : "text-amber-500"
+                      PRIORITY_COLORS[item.product.priority]
                     )}>
-                      {item.product.priority === 2 ? "!!!" : "!!"}
+                      {PRIORITY_ICONS[item.product.priority]}
                     </span>
                   )}
 

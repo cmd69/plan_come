@@ -135,7 +135,7 @@ function ProductGridTile({
       {product.priority > 0 && (
         <span className={cn(
           "absolute top-1.5 left-1.5 w-2 h-2 rounded-full",
-          product.priority === 2 ? "bg-red-400" : "bg-amber-400"
+          product.priority === 3 ? "bg-red-400" : product.priority === 2 ? "bg-amber-400" : "bg-blue-400"
         )} />
       )}
       <div className="absolute top-1 right-1 flex">
