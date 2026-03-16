@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import WeekPlanView from "@/components/plan/WeekPlanView";
 
+export const dynamic = "force-dynamic";
+
 function getWeekStart(): Date {
   const now = new Date();
   const day = now.getDay(); // 0=Sun, 1=Mon...

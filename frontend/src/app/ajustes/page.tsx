@@ -3,6 +3,8 @@ import CategoryManager from "@/components/ajustes/CategoryManager";
 import ThemeToggle from "@/components/ajustes/ThemeToggle";
 import LogoutButton from "@/components/ajustes/LogoutButton";
 
+export const dynamic = "force-dynamic";
+
 export default async function AjustesPage() {
   const categories = await getCategories();
 

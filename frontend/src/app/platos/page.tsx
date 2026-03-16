@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { getCategories } from "@/actions/categories";
 import DishList from "@/components/platos/DishList";
 
+export const dynamic = "force-dynamic";
+
 export default async function PlatosPage() {
   const [dishes, products, categories] = await Promise.all([
     prisma.dish.findMany({

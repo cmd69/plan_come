@@ -3,6 +3,8 @@ import { getCategories } from "@/actions/categories";
 import { getActiveSession } from "@/actions/shopping";
 import ShoppingView from "@/components/compra/ShoppingView";
 
+export const dynamic = "force-dynamic";
+
 export default async function CompraPage() {
   const [products, categories, activeSession] = await Promise.all([
     prisma.product.findMany({

@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { getCategories } from "@/actions/categories";
 import ProductList from "@/components/inventario/ProductList";
 
+export const dynamic = "force-dynamic";
+
 export default async function InventarioPage({
   searchParams,
 }: {
