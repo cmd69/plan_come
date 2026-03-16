@@ -44,13 +44,16 @@ export default function ProductGrid({ products, categories, initialCategory, onE
                 onClick={() => setActiveCategory(slug)}
                 className="relative flex flex-col items-center justify-center gap-1.5 p-4 rounded-2xl bg-gray-50 border border-gray-200 active:bg-gray-100 aspect-square"
               >
+                {inStock > 0 && (
+                  <span className="absolute top-2 right-2 w-5 h-5 bg-emerald-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                    {inStock}
+                  </span>
+                )}
                 <span className="text-3xl">{emojis[slug] ?? "📦"}</span>
                 <span className="text-xs font-medium text-gray-700 text-center leading-tight">
                   {labels[slug] ?? slug}
                 </span>
-                <span className={cn("text-[10px] font-medium", inStock === total ? "text-emerald-600" : "text-gray-400")}>
-                  {inStock}/{total}
-                </span>
+                <span className="text-[10px] text-gray-400">{total}</span>
               </button>
             );
           })}
