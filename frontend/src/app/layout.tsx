@@ -23,8 +23,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body className="min-h-screen">
+      <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
+      <body className="min-h-screen">
         <NavWrapper>{children}</NavWrapper>
       </body>
     </html>
