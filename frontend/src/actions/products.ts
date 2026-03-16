@@ -43,6 +43,26 @@ export async function resetAllUnits() {
   revalidatePath("/inventario");
 }
 
+export async function bulkUpdateProducts(ids: number[], formData: FormData) {
+  const data: Record<string, unknown> = {};
+
+  const icon = formData.get("icon") as string | null;
+  const category = (formData.get("category") as string)?.trim();
+  const priority = formData.get("priority") as string | null;
+
+  if (icon !== null && icon !== "") data.icon = icon.trim();
+  if (category) data.category = category;
+  if (priority !== null && priority !== "") data.priority = parseInt(priority);
+
+  if (Object.keys(data).length === 0 || ids.length === 0) return;
+
+  await prisma.product.updateMany({
+    where: { id: { in: ids } },
+    data,
+  });
+  revalidatePath("/inventario");
+}
+
 export async function deleteProduct(id: number) {
   await prisma.shoppingSessionItem.deleteMany({ where: { productId: id } });
   await prisma.product.delete({ where: { id } });

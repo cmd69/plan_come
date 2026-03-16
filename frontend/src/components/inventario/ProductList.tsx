@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useMemo, useTransition, useCallback } from "react";
-import { Plus, ChevronDown, ArrowDownAZ, ArrowUpAZ, ArrowDown01, ArrowUp10, SmilePlus, Smile, List, LayoutGrid, RotateCcw } from "lucide-react";
+import { Plus, ChevronDown, ArrowDownAZ, ArrowUpAZ, ArrowDown01, ArrowUp10, SmilePlus, Smile, List, LayoutGrid, RotateCcw, Pencil, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Product, Category } from "@prisma/client";
 import { buildCategoryMaps } from "@/lib/constants";
 import ProductCard from "./ProductCard";
 import ProductForm from "./ProductForm";
+import BulkEditForm from "./BulkEditForm";
 import ImportProducts from "./ImportProducts";
 import ProductGrid from "./ProductGrid";
 import { resetAllUnits } from "@/actions/products";
@@ -46,9 +47,7 @@ interface ProductListProps {
 }
 
 export default function ProductList({ products, categories, initialCategory }: ProductListProps) {
-  const [formProduct, setFormProduct] = useState<Product | null | undefined>(
-    undefined
-  );
+  const [formProduct, setFormProduct] = useState<Product | null | undefined>(undefined);
   const [defaultCategory, setDefaultCategory] = useState<string | undefined>();
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const [sortKey, setSortKey] = useState<SortKey>("alpha");
@@ -58,12 +57,24 @@ export default function ProductList({ products, categories, initialCategory }: P
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [isPending, startTransition] = useTransition();
 
+  // Selection mode
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [showBulkEdit, setShowBulkEdit] = useState(false);
+  const selectionMode = selected.size > 0;
+
   const dismissForm = useCallback(() => {
     setFormProduct(undefined);
     setDefaultCategory(undefined);
   }, []);
 
   const closeForm = useModalHistory(formProduct !== undefined, dismissForm);
+
+  const dismissBulkEdit = useCallback(() => {
+    setShowBulkEdit(false);
+    setSelected(new Set());
+  }, []);
+
+  const closeBulkEdit = useModalHistory(showBulkEdit, dismissBulkEdit);
 
   const { labels, emojis, order } = useMemo(
     () => buildCategoryMaps(categories),
@@ -88,6 +99,18 @@ export default function ProductList({ products, categories, initialCategory }: P
     setShowSortMenu(false);
   }
 
+  const handleLongPress = useCallback((id: number) => {
+    setSelected(new Set([id]));
+  }, []);
+
+  const handleToggleSelect = useCallback((id: number) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }, []);
+
   const grouped = useMemo(
     () =>
       order.map((slug) => ({
@@ -111,75 +134,100 @@ export default function ProductList({ products, categories, initialCategory }: P
     <>
       {/* Header */}
       <header className="sticky top-0 bg-white border-b border-gray-200 px-4 py-4 z-10 flex items-center justify-between">
-        <h1 className="text-xl font-bold text-gray-900">Inventario</h1>
-        {!isEmpty && (
-          <div className="flex items-center gap-1.5">
+        {selectionMode ? (
+          <>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setSelected(new Set())}
+                className="w-8 h-8 flex items-center justify-center text-gray-500 active:bg-gray-100 rounded-lg"
+              >
+                <X size={18} />
+              </button>
+              <span className="text-base font-semibold text-gray-900">
+                {selected.size} seleccionado{selected.size > 1 ? "s" : ""}
+              </span>
+            </div>
             <button
-              onClick={() => setShowResetConfirm(true)}
-              className="flex items-center justify-center w-8 h-8 text-gray-500 bg-gray-100 rounded-lg active:bg-gray-200"
-              title="Poner todo a 0"
+              onClick={() => setShowBulkEdit(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-emerald-600 bg-emerald-50 rounded-lg active:bg-emerald-100"
             >
-              <RotateCcw size={15} />
+              <Pencil size={14} />
+              Editar
             </button>
-            <button
-              onClick={() => setViewMode((v) => (v === "list" ? "grid" : "list"))}
-              className="flex items-center justify-center w-8 h-8 text-gray-500 bg-gray-100 rounded-lg active:bg-gray-200"
-              title={viewMode === "list" ? "Vista cuadrícula" : "Vista lista"}
-            >
-              {viewMode === "list" ? <LayoutGrid size={15} /> : <List size={15} />}
-            </button>
-
-            {viewMode === "list" && (
-              <div className="relative">
+          </>
+        ) : (
+          <>
+            <h1 className="text-xl font-bold text-gray-900">Inventario</h1>
+            {!isEmpty && (
+              <div className="flex items-center gap-1.5">
                 <button
-                  onClick={() => setShowSortMenu((v) => !v)}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 rounded-lg active:bg-gray-200"
+                  onClick={() => setShowResetConfirm(true)}
+                  className="flex items-center justify-center w-8 h-8 text-gray-500 bg-gray-100 rounded-lg active:bg-gray-200"
+                  title="Poner todo a 0"
                 >
-                  <CurrentIcon size={14} />
-                  {currentSort.label}
+                  <RotateCcw size={15} />
+                </button>
+                <button
+                  onClick={() => setViewMode((v) => (v === "list" ? "grid" : "list"))}
+                  className="flex items-center justify-center w-8 h-8 text-gray-500 bg-gray-100 rounded-lg active:bg-gray-200"
+                  title={viewMode === "list" ? "Vista cuadrícula" : "Vista lista"}
+                >
+                  {viewMode === "list" ? <LayoutGrid size={15} /> : <List size={15} />}
                 </button>
 
-                {showSortMenu && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-20"
-                      onClick={() => setShowSortMenu(false)}
-                    />
-                    <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-30 min-w-[160px] py-1">
-                      {SORT_OPTIONS.map((opt) => {
-                        const isActive = opt.key === sortKey;
-                        const Icon = isActive
-                          ? sortDir === "asc"
-                            ? opt.iconAsc
-                            : opt.iconDesc
-                          : opt.iconAsc;
-                        return (
-                          <button
-                            key={opt.key}
-                            onClick={() => handleSortSelect(opt.key)}
-                            className={cn(
-                              "w-full flex items-center gap-2 px-3 py-2.5 text-sm active:bg-gray-50",
-                              isActive
-                                ? "text-emerald-600 font-medium"
-                                : "text-gray-700"
-                            )}
-                          >
-                            <Icon size={16} />
-                            <span className="flex-1 text-left">{opt.label}</span>
-                            {isActive && (
-                              <span className="text-xs text-gray-400">
-                                {sortDir === "asc" ? "A-Z" : "Z-A"}
-                              </span>
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </>
+                {viewMode === "list" && (
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowSortMenu((v) => !v)}
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 rounded-lg active:bg-gray-200"
+                    >
+                      <CurrentIcon size={14} />
+                      {currentSort.label}
+                    </button>
+
+                    {showSortMenu && (
+                      <>
+                        <div
+                          className="fixed inset-0 z-20"
+                          onClick={() => setShowSortMenu(false)}
+                        />
+                        <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-30 min-w-[160px] py-1">
+                          {SORT_OPTIONS.map((opt) => {
+                            const isActive = opt.key === sortKey;
+                            const Icon = isActive
+                              ? sortDir === "asc"
+                                ? opt.iconAsc
+                                : opt.iconDesc
+                              : opt.iconAsc;
+                            return (
+                              <button
+                                key={opt.key}
+                                onClick={() => handleSortSelect(opt.key)}
+                                className={cn(
+                                  "w-full flex items-center gap-2 px-3 py-2.5 text-sm active:bg-gray-50",
+                                  isActive
+                                    ? "text-emerald-600 font-medium"
+                                    : "text-gray-700"
+                                )}
+                              >
+                                <Icon size={16} />
+                                <span className="flex-1 text-left">{opt.label}</span>
+                                {isActive && (
+                                  <span className="text-xs text-gray-400">
+                                    {sortDir === "asc" ? "A-Z" : "Z-A"}
+                                  </span>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </>
+                    )}
+                  </div>
                 )}
               </div>
             )}
-          </div>
+          </>
         )}
       </header>
 
@@ -237,6 +285,10 @@ export default function ProductList({ products, categories, initialCategory }: P
                       key={product.id}
                       product={product}
                       onEdit={(p) => setFormProduct(p)}
+                      selectionMode={selectionMode}
+                      isSelected={selected.has(product.id)}
+                      onLongPress={handleLongPress}
+                      onToggleSelect={handleToggleSelect}
                     />
                   ))}
               </section>
@@ -246,7 +298,7 @@ export default function ProductList({ products, categories, initialCategory }: P
       )}
 
       {/* FAB */}
-      {!isEmpty && (
+      {!isEmpty && !selectionMode && (
         <button
           onClick={() => setFormProduct(null)}
           className="fixed bottom-20 right-4 w-14 h-14 bg-emerald-600 text-white rounded-full shadow-lg flex items-center justify-center active:bg-emerald-700 transition-colors z-30"
@@ -256,13 +308,22 @@ export default function ProductList({ products, categories, initialCategory }: P
         </button>
       )}
 
-      {/* Modal */}
+      {/* Product Form Modal */}
       {formProduct !== undefined && (
         <ProductForm
           product={formProduct}
           categories={categories}
           defaultCategory={defaultCategory}
           onClose={closeForm}
+        />
+      )}
+
+      {/* Bulk Edit Modal */}
+      {showBulkEdit && (
+        <BulkEditForm
+          selectedIds={[...selected]}
+          categories={categories}
+          onClose={closeBulkEdit}
         />
       )}
 
