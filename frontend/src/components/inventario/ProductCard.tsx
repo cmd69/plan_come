@@ -5,6 +5,7 @@ import { Pencil, Trash2, Check } from "lucide-react";
 import { updateUnits, deleteProduct } from "@/actions/products";
 import type { Product } from "@prisma/client";
 import { cn } from "@/lib/utils";
+import { PRIORITY_ICONS, PRIORITY_COLORS } from "@/lib/constants";
 
 interface ProductCardProps {
   product: Product;
@@ -110,6 +111,11 @@ export default function ProductCard({
         <span className="text-base font-medium text-gray-900 truncate">
           {product.name}
         </span>
+        {product.priority > 0 && (
+          <span className={cn("text-[9px] font-bold shrink-0", PRIORITY_COLORS[product.priority])}>
+            {PRIORITY_ICONS[product.priority]}
+          </span>
+        )}
       </div>
 
       {!selectionMode && (
