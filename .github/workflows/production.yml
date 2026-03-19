@@ -55,12 +55,11 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT || 22 }}
+          port: ${{ secrets.SSH_PORT }}
           script: |
             set -e
             DEPLOY_DIR="$HOME/${{ secrets.PROD_PATH }}"
             cd "$DEPLOY_DIR" || { echo "Deploy dir not found: $DEPLOY_DIR"; exit 1; }
-            git pull || true
             echo "🔄 Backup de BD antes del deploy..."
             make backup || { echo "⚠️ Backup falló. Continuando deploy..."; }
             make deploy

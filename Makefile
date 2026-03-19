@@ -42,9 +42,9 @@ up-pro: ## Iniciar servicios de PRODUCCIÓN
 build-pro: ## Construir imagen de PRODUCCIÓN (local)
 	docker compose -f $(PROD_COMPOSE) build
 
-deploy: ## Deploy: pull imagen de Docker Hub y recrear contenedor
-	docker compose -f $(PROD_COMPOSE) pull
-	docker compose -f $(PROD_COMPOSE) up -d --force-recreate
+deploy: ## Deploy: pull imagen, recrear contenedor de PRODUCCIÓN
+	docker compose -f $(PROD_COMPOSE) pull 2>/dev/null || true
+	docker compose -f $(PROD_COMPOSE) up -d --build --force-recreate
 
 # === Base de datos ===
 
