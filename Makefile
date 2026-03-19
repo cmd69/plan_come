@@ -1,7 +1,7 @@
 DEV_COMPOSE = docker-compose.dev.yml
 PROD_COMPOSE = docker-compose.prod.yml
 
-.PHONY: help up-dev down-dev build-dev logs-dev up-pro build-pro shell-app migrate studio setup regen backup restore
+.PHONY: help up-dev down-dev build-dev logs-dev up-pro build-pro deploy shell-app migrate studio setup regen backup restore
 
 help: ## Mostrar esta ayuda
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -36,15 +36,15 @@ studio: ## Abrir Prisma Studio
 
 # === Producción ===
 
-up-pro: ## Iniciar servicios de PRODUCCIÓN (build local)
+up-pro: ## Iniciar servicios de PRODUCCIÓN
 	docker compose -f $(PROD_COMPOSE) up -d
 
-build-pro: ## Construir imagen de PRODUCCIÓN
+build-pro: ## Construir imagen de PRODUCCIÓN (local)
 	docker compose -f $(PROD_COMPOSE) build
 
-deploy: ## Deploy: pull imagen, recrear contenedor de PRODUCCIÓN
-	docker compose -f $(PROD_COMPOSE) pull 2>/dev/null || true
-	docker compose -f $(PROD_COMPOSE) up -d --build --force-recreate
+deploy: ## Deploy: pull imagen de Docker Hub y recrear contenedor
+	docker compose -f $(PROD_COMPOSE) pull
+	docker compose -f $(PROD_COMPOSE) up -d --force-recreate
 
 # === Base de datos ===
 
