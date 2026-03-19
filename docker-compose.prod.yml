@@ -1,8 +1,6 @@
 services:
   app:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+    image: cmd69/plan-come:latest
     container_name: plancome_app
     ports:
       - "${APP_PORT:-3041}:3000"
