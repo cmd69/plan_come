@@ -1,7 +1,7 @@
 services:
   app:
     image: cmd69/plan-come:latest
-    container_name: plancome_app
+    container_name: plancome
     ports:
       - "${APP_PORT:-3041}:3000"
     volumes:
