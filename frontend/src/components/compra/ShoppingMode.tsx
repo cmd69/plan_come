@@ -80,7 +80,7 @@ export default function ShoppingMode({ session, categories, onAddMore }: Shoppin
   return (
     <>
       {/* Header with progress */}
-      <header className="sticky top-0 bg-surface border-b border-border-default z-10">
+      <header className="sticky top-0 md:top-12 bg-surface border-b border-border-default z-10">
         <div className="px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ShoppingCart size={20} className="text-accent-text" />
@@ -135,7 +135,7 @@ export default function ShoppingMode({ session, categories, onAddMore }: Shoppin
                 <div
                   key={item.id}
                   className={cn(
-                    "flex items-center gap-3 px-4 py-3.5 border-b border-surface-alt transition-colors",
+                    "flex items-center gap-3 px-4 py-3.5 md:py-2.5 border-b border-surface-alt transition-colors",
                     item.checked && "bg-surface-alt/50"
                   )}
                 >
@@ -216,7 +216,7 @@ export default function ShoppingMode({ session, categories, onAddMore }: Shoppin
 
       {/* Finish button */}
       {checkedCount > 0 && (
-        <div className="fixed bottom-16 left-0 right-0 px-4 pb-4 pt-2 bg-gradient-to-t from-surface via-surface to-surface/0 z-30">
+        <div className="fixed bottom-16 md:bottom-0 left-0 right-0 px-4 pb-4 pt-2 bg-gradient-to-t from-surface via-surface to-surface/0 z-30">
           <button
             onClick={() => setShowFinishConfirm(true)}
             className="w-full h-14 rounded-2xl bg-accent shadow-lg flex items-center justify-center gap-2 text-inverted font-semibold text-base active:bg-accent-hover"
@@ -231,7 +231,7 @@ export default function ShoppingMode({ session, categories, onAddMore }: Shoppin
       {showFinishConfirm && (
         <>
           <div className="fixed inset-0 bg-overlay z-[70]" onClick={() => setShowFinishConfirm(false)} />
-          <div className="fixed bottom-0 left-0 right-0 bg-surface rounded-t-2xl z-[80] px-4 pt-6 pb-8">
+          <div className="fixed bottom-0 left-0 right-0 bg-surface rounded-t-2xl z-[80] px-4 pt-6 pb-8 sheet-popup-confirm">
             <p className="text-base font-semibold text-primary text-center mb-2">
               Finalizar compra
             </p>
@@ -267,7 +267,7 @@ export default function ShoppingMode({ session, categories, onAddMore }: Shoppin
       {showCancelConfirm && (
         <>
           <div className="fixed inset-0 bg-overlay z-[70]" onClick={() => setShowCancelConfirm(false)} />
-          <div className="fixed bottom-0 left-0 right-0 bg-surface rounded-t-2xl z-[80] px-4 pt-6 pb-8">
+          <div className="fixed bottom-0 left-0 right-0 bg-surface rounded-t-2xl z-[80] px-4 pt-6 pb-8 sheet-popup-confirm">
             <p className="text-base font-semibold text-primary text-center mb-2">
               Descartar lista
             </p>

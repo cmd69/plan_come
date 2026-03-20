@@ -8,9 +8,9 @@ export default function NavWrapper({ children }: { children: React.ReactNode }) 
   const isLogin = pathname === "/login";
 
   return (
-    <>
-      <main className={isLogin ? "" : "pb-16"}>{children}</main>
+    <div className="app-frame">
       {!isLogin && <BottomNav />}
-    </>
+      <main className={isLogin ? "" : "pb-16 md:pb-0"}>{children}</main>
+    </div>
   );
 }

@@ -300,7 +300,7 @@ className="w-6 h-6 flex items-center justify-center rounded-full border border-b
     <>
       <div className="fixed inset-0 bg-overlay z-50" onClick={onClose} />
 
-      <div className="fixed bottom-0 left-0 right-0 bg-surface rounded-t-2xl z-[60] max-h-[90vh] flex flex-col">
+      <div className="fixed bottom-0 left-0 right-0 bg-surface rounded-t-2xl z-[60] max-h-[90vh] flex flex-col sheet-popup">
         <div className="flex items-center justify-between px-4 pt-4 pb-2 shrink-0">
           <h2 className="text-lg font-semibold text-primary">
             {dish ? "Editar plato" : "Nuevo plato"}
@@ -624,7 +624,7 @@ className="w-6 h-6 flex items-center justify-center rounded-full border border-b
       {sidePickerGroup !== null && (
         <>
           <div className="fixed inset-0 bg-overlay z-[70]" onClick={() => setSidePickerGroup(null)} />
-          <div className="fixed bottom-0 left-0 right-0 bg-elevated rounded-t-2xl z-[80] max-h-[70vh] flex flex-col">
+          <div className="fixed bottom-0 left-0 right-0 bg-elevated rounded-t-2xl z-[80] max-h-[70vh] flex flex-col sheet-popup">
             <div className="flex items-center justify-between px-4 pt-4 pb-2 shrink-0 border-b border-border-subtle">
               <h2 className="text-lg font-semibold text-primary">
                 Acompañantes — Grupo {sidePickerGroup}

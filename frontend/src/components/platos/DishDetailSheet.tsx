@@ -105,7 +105,7 @@ export default function DishDetailSheet({ dish, onEdit, onClose }: DishDetailShe
     <>
       <div className="fixed inset-0 bg-overlay z-[60]" onClick={onClose} />
 
-      <div className="fixed bottom-0 left-0 right-0 bg-elevated rounded-t-2xl z-[65] max-h-[80vh] flex flex-col">
+      <div className="fixed bottom-0 left-0 right-0 bg-elevated rounded-t-2xl z-[65] max-h-[80vh] flex flex-col sheet-popup">
         {/* Header */}
         <div className="flex items-center gap-3 px-4 pt-5 pb-3 shrink-0">
           <span className="text-3xl">{dish.emoji || "🍽️"}</span>

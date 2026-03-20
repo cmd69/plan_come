@@ -133,7 +133,7 @@ export default function ProductList({ products, categories, initialCategory }: P
   return (
     <>
       {/* Header */}
-      <header className="sticky top-0 bg-surface border-b border-border-default px-4 py-4 z-10 flex items-center justify-between">
+      <header className="sticky top-0 md:top-12 bg-surface border-b border-border-default px-4 py-4 z-10 flex items-center justify-between">
         {selectionMode ? (
           <>
             <div className="flex items-center gap-2">
@@ -303,10 +303,11 @@ export default function ProductList({ products, categories, initialCategory }: P
       {!isEmpty && !selectionMode && (
         <button
           onClick={() => setFormProduct(null)}
-          className="fixed bottom-20 right-4 w-14 h-14 bg-accent text-inverted rounded-full shadow-lg flex items-center justify-center active:bg-accent-hover transition-colors z-30"
+          className="fixed bottom-20 right-4 md:bottom-6 md:right-auto md:left-1/2 md:-translate-x-1/2 w-14 h-14 md:w-auto md:h-auto md:px-5 md:py-3 bg-accent text-inverted rounded-full md:rounded-2xl shadow-lg flex items-center justify-center md:gap-2 active:bg-accent-hover hover:bg-accent-hover transition-colors z-30"
           aria-label="Añadir producto"
         >
-          <Plus size={26} strokeWidth={2.5} />
+          <Plus size={22} strokeWidth={2.5} />
+          <span className="hidden md:inline text-sm font-semibold">Añadir producto</span>
         </button>
       )}
 
@@ -333,7 +334,7 @@ export default function ProductList({ products, categories, initialCategory }: P
       {showResetConfirm && (
         <>
           <div className="fixed inset-0 bg-overlay z-[70]" onClick={() => setShowResetConfirm(false)} />
-          <div className="fixed bottom-0 left-0 right-0 bg-surface rounded-t-2xl z-[80] px-4 pt-6 pb-8">
+          <div className="fixed bottom-0 left-0 right-0 bg-surface rounded-t-2xl z-[80] px-4 pt-6 pb-8 sheet-popup-confirm">
             <p className="text-base font-semibold text-primary text-center mb-2">
               Poner todo a 0
             </p>

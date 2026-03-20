@@ -76,7 +76,7 @@ export default function DishList({ dishes, products, categories }: DishListProps
   return (
     <>
       {/* Header con toggle de vista */}
-      <header className="sticky top-0 bg-surface border-b border-border-default px-4 py-4 z-10 flex items-center justify-between">
+      <header className="sticky top-0 md:top-12 bg-surface border-b border-border-default px-4 py-4 z-10 flex items-center justify-between">
         <h1 className="text-xl font-bold text-primary">
           <span className="mr-1.5">🍽️</span>Platos
         </h1>
@@ -165,7 +165,7 @@ export default function DishList({ dishes, products, categories }: DishListProps
                       <span className="text-faint normal-case font-normal tracking-normal">{typeDishes.length}</span>
                     </button>
                     {!isCollapsed && (
-                      <div className="grid grid-cols-3 gap-2.5 p-3">
+                      <div className="grid grid-cols-3 md:grid-cols-5 gap-2.5 md:gap-2 p-3">
                         {typeDishes.map((dish) => {
                           const available = isDishAvailable(dish);
                           const hasIngredients = dish.ingredients.length > 0 || dish.sides.length > 0;
@@ -174,7 +174,7 @@ export default function DishList({ dishes, products, categories }: DishListProps
                               key={dish.id}
                               onClick={() => setDetailDish(dish)}
                               className={cn(
-                                "relative flex flex-col items-center justify-center gap-1 p-3 rounded-xl border-2 aspect-square transition-colors",
+                                "relative flex flex-col items-center justify-center gap-1 p-3 md:p-2 rounded-xl border-2 aspect-square transition-colors hover:bg-surface-alt",
                                 !dish.active
                                   ? "border-border-default bg-surface-alt opacity-50"
                                   : "border-border-default bg-surface active:bg-surface-alt"
@@ -187,7 +187,7 @@ export default function DishList({ dishes, products, categories }: DishListProps
                                   available ? "bg-accent" : "bg-danger"
                                 )} />
                               )}
-                              <span className="text-2xl leading-none">{dish.emoji || "🍽️"}</span>
+                              <span className="text-2xl md:text-xl leading-none">{dish.emoji || "🍽️"}</span>
                               <span className={cn(
                                 "text-[11px] font-medium text-center leading-tight line-clamp-2",
                                 dish.active ? "text-secondary" : "text-faint line-through"
@@ -200,7 +200,7 @@ export default function DishList({ dishes, products, categories }: DishListProps
                         {/* Add new dish card */}
                         <button
                           onClick={() => openNewDish(type)}
-                          className="flex flex-col items-center justify-center gap-1 p-3 rounded-xl border-2 border-dashed border-border-strong aspect-square text-faint active:bg-surface-alt"
+                          className="flex flex-col items-center justify-center gap-1 p-3 md:p-2 rounded-xl border-2 border-dashed border-border-strong aspect-square text-faint active:bg-surface-alt hover:bg-surface-alt"
                         >
                           <Plus size={20} />
                           <span className="text-[10px] font-medium">Añadir</span>
@@ -218,10 +218,11 @@ export default function DishList({ dishes, products, categories }: DishListProps
       {!isEmpty && (
         <button
           onClick={() => openNewDish()}
-          className="fixed bottom-20 right-4 w-14 h-14 bg-accent text-inverted rounded-full shadow-lg flex items-center justify-center active:bg-accent-hover transition-colors z-30"
+          className="fixed bottom-20 right-4 md:bottom-6 md:right-auto md:left-1/2 md:-translate-x-1/2 w-14 h-14 md:w-auto md:h-auto md:px-5 md:py-3 bg-accent text-inverted rounded-full md:rounded-2xl shadow-lg flex items-center justify-center md:gap-2 active:bg-accent-hover hover:bg-accent-hover transition-colors z-30"
           aria-label="Añadir plato"
         >
-          <Plus size={26} strokeWidth={2.5} />
+          <Plus size={22} strokeWidth={2.5} />
+          <span className="hidden md:inline text-sm font-semibold">Añadir plato</span>
         </button>
       )}
 

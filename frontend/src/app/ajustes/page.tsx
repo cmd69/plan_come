@@ -8,7 +8,7 @@ export default async function AjustesPage() {
 
   return (
     <div>
-      <header className="sticky top-0 bg-surface border-b border-border-default px-4 py-4 z-10">
+      <header className="sticky top-0 md:top-12 bg-surface border-b border-border-default px-4 py-4 z-10">
         <h1 className="text-xl font-bold text-primary">
           <span className="mr-1.5">⚙️</span>Ajustes
         </h1>

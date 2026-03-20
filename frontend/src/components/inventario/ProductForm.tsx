@@ -43,7 +43,7 @@ export default function ProductForm({ product, categories, defaultCategory, onCl
         onClick={onClose}
       />
 
-      <div className="fixed bottom-0 left-0 right-0 bg-elevated rounded-t-2xl z-[60] max-h-[90vh] flex flex-col">
+      <div className="fixed bottom-0 left-0 right-0 bg-elevated rounded-t-2xl z-[60] max-h-[90vh] flex flex-col sheet-popup">
         <div className="flex items-center justify-between px-4 pt-4 pb-2 shrink-0">
           <h2 className="text-lg font-semibold text-primary">
             {product ? "Editar producto" : "Nuevo producto"}

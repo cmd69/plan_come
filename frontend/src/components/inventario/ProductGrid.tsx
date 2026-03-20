@@ -54,7 +54,7 @@ export default function ProductGrid({ products, categories, initialCategory, onE
   return (
     <div className="p-4">
       {!activeCategory ? (
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-3 md:grid-cols-5 gap-3 md:gap-2">
           {categoriesWithProducts.map((slug) => {
             const catProducts = products.filter((p) => p.category === slug);
             const total = catProducts.length;
@@ -63,14 +63,14 @@ export default function ProductGrid({ products, categories, initialCategory, onE
               <button
                 key={slug}
                 onClick={() => openCategory(slug)}
-                className="relative flex flex-col items-center justify-center gap-1.5 p-4 rounded-2xl bg-surface-alt border border-border-default active:bg-pressed aspect-square"
+                className="relative flex flex-col items-center justify-center gap-1.5 p-4 md:p-2.5 rounded-2xl md:rounded-xl bg-surface-alt border border-border-default active:bg-pressed hover:bg-pressed aspect-square"
               >
                 {inStock > 0 && (
                   <span className="absolute top-2 right-2 w-5 h-5 bg-accent text-inverted text-[10px] font-bold rounded-full flex items-center justify-center">
                     {inStock}
                   </span>
                 )}
-                <span className="text-3xl">{emojis[slug] ?? "📦"}</span>
+                <span className="text-3xl md:text-2xl">{emojis[slug] ?? "📦"}</span>
                 <span className="text-xs font-medium text-secondary text-center leading-tight">
                   {labels[slug] ?? slug}
                 </span>
@@ -90,7 +90,7 @@ export default function ProductGrid({ products, categories, initialCategory, onE
             {labels[activeCategory] ?? activeCategory}
           </button>
 
-          <div className="grid grid-cols-3 gap-2.5">
+          <div className="grid grid-cols-3 md:grid-cols-5 gap-2.5 md:gap-2">
             {categoryProducts.map((product) => (
               <ProductGridTile
                 key={product.id}
@@ -100,7 +100,7 @@ export default function ProductGrid({ products, categories, initialCategory, onE
             ))}
             <button
               onClick={() => onAdd(activeCategory!)}
-              className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border-strong p-3 gap-1 aspect-square text-faint active:bg-surface-alt"
+              className="flex flex-col items-center justify-center rounded-2xl md:rounded-xl border-2 border-dashed border-border-strong p-3 md:p-2 gap-1 aspect-square text-faint active:bg-surface-alt hover:bg-surface-alt"
             >
               <Plus size={24} />
               <span className="text-[11px] font-medium">Añadir</span>
@@ -147,7 +147,7 @@ function ProductGridTile({
   return (
     <div
       className={cn(
-        "flex flex-col items-center rounded-2xl border-2 p-3 gap-1 relative",
+        "flex flex-col items-center rounded-2xl md:rounded-xl border-2 p-3 md:p-2 gap-1 relative",
         units === 0
           ? "border-danger-border bg-danger-soft"
           : "border-border-default bg-surface"
@@ -179,7 +179,7 @@ function ProductGridTile({
         </button>
       </div>
 
-      <span className="text-2xl leading-none mt-2">
+      <span className="text-2xl md:text-xl leading-none mt-2 md:mt-1">
         {product.icon || "📦"}
       </span>
 

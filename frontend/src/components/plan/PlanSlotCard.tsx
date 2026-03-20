@@ -56,7 +56,7 @@ export default function PlanSlotCard({
     <>
       <div
         className={cn(
-          "flex items-center gap-3 px-4 py-3 min-h-[56px] transition-opacity",
+          "flex items-center gap-3 px-4 py-3 md:py-2 min-h-[56px] md:min-h-[44px] transition-opacity",
           isPending && "opacity-50"
         )}
       >
@@ -72,7 +72,7 @@ export default function PlanSlotCard({
         <button
           onClick={() => setShowPicker(true)}
           className={cn(
-            "flex-1 text-left text-sm rounded-xl px-3 py-2.5 min-h-[44px] flex items-center",
+            "flex-1 text-left text-sm rounded-xl px-3 py-2.5 md:py-1.5 min-h-[44px] md:min-h-[36px] flex items-center",
             eatenOut
               ? "bg-pressed text-faint line-through"
               : dish

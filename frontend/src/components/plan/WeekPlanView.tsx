@@ -100,7 +100,7 @@ export default function WeekPlanView({ initialPlan, dishes }: WeekPlanViewProps)
   return (
     <>
       {/* Header */}
-      <header className="sticky top-0 bg-surface border-b border-border-default z-10">
+      <header className="sticky top-0 md:top-12 bg-surface border-b border-border-default z-10">
         <div className="flex items-center justify-between px-4 py-3">
           <h1 className="text-xl font-bold text-primary">
             <span className="mr-1.5">📅</span>Plan semanal
@@ -223,7 +223,7 @@ export default function WeekPlanView({ initialPlan, dishes }: WeekPlanViewProps)
             className="fixed inset-0 bg-overlay z-[70]"
             onClick={() => setShowClearConfirm(false)}
           />
-          <div className="fixed bottom-0 left-0 right-0 bg-surface rounded-t-2xl z-[80] px-4 pt-6 pb-8">
+          <div className="fixed bottom-0 left-0 right-0 bg-surface rounded-t-2xl z-[80] px-4 pt-6 pb-8 sheet-popup-confirm">
             <p className="text-base font-semibold text-primary text-center mb-2">
               Limpiar plan
             </p>

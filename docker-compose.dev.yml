@@ -3,7 +3,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile.dev
-    container_name: plancome_app_dev
+    container_name: plancome-dev
     ports:
       - "${APP_PORT:-3040}:3000"
     volumes:

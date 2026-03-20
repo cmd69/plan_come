@@ -72,7 +72,7 @@ export default function IngredientPicker({
     <>
       <div className="fixed inset-0 bg-overlay z-[70]" onClick={onClose} />
 
-      <div className="fixed bottom-0 left-0 right-0 bg-elevated rounded-t-2xl z-[80] max-h-[85vh] flex flex-col">
+      <div className="fixed bottom-0 left-0 right-0 bg-elevated rounded-t-2xl z-[80] max-h-[85vh] flex flex-col sheet-popup">
         {/* Header */}
         <div className="flex items-center justify-between px-4 pt-4 pb-2 shrink-0 border-b border-border-subtle">
           <div className="flex items-center gap-2">
@@ -101,7 +101,7 @@ export default function IngredientPicker({
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-4">
           {!activeCategory ? (
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 md:grid-cols-4 gap-3 md:gap-2">
               {categoriesWithProducts.map((slug) => {
                 const catProducts = availableProducts.filter((p) => p.category === slug);
                 const catSelected = catProducts.filter((p) => local.has(p.id)).length;
@@ -109,9 +109,9 @@ export default function IngredientPicker({
                   <button
                     key={slug}
                     onClick={() => setActiveCategory(slug)}
-                    className="relative flex flex-col items-center justify-center gap-1.5 p-4 rounded-2xl bg-surface-alt border border-border-default active:bg-pressed aspect-square"
+                    className="relative flex flex-col items-center justify-center gap-1.5 p-4 md:p-2.5 rounded-2xl md:rounded-xl bg-surface-alt border border-border-default active:bg-pressed hover:bg-pressed aspect-square"
                   >
-                    <span className="text-3xl">{emojis[slug] ?? "📦"}</span>
+                    <span className="text-3xl md:text-2xl">{emojis[slug] ?? "📦"}</span>
                     <span className="text-xs font-medium text-secondary text-center leading-tight">
                       {labels[slug] ?? slug}
                     </span>
@@ -125,7 +125,7 @@ export default function IngredientPicker({
               })}
             </div>
           ) : (
-            <div className="grid grid-cols-3 gap-2.5">
+            <div className="grid grid-cols-3 md:grid-cols-4 gap-2.5 md:gap-2">
               {categoryProducts.map((product) => {
                 const sel = local.has(product.id);
                 return (

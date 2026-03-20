@@ -115,7 +115,7 @@ export default function DishCard({ dish, onEdit }: DishCardProps) {
   return (
     <div className={cn("bg-surface border-b border-border-subtle", !dish.active && "opacity-50")}>
       {/* Fila principal */}
-      <div className="flex items-center gap-3 px-4 py-3">
+      <div className="flex items-center gap-3 px-4 py-3 md:py-2">
         {/* Emoji del plato */}
         <span className="text-xl shrink-0">{dishEmoji}</span>
 

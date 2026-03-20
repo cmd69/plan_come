@@ -51,7 +51,7 @@ export default function CategoryForm({ category, onClose }: CategoryFormProps) {
     <>
       <div className="fixed inset-0 bg-overlay z-50" onClick={onClose} />
 
-      <div className="fixed bottom-0 left-0 right-0 bg-surface rounded-t-2xl z-[60] max-h-[90vh] flex flex-col">
+      <div className="fixed bottom-0 left-0 right-0 bg-surface rounded-t-2xl z-[60] max-h-[90vh] flex flex-col sheet-popup">
         <div className="flex items-center justify-between px-4 pt-4 pb-2 shrink-0">
           <h2 className="text-lg font-semibold text-primary">
             {category ? "Editar categoría" : "Nueva categoría"}

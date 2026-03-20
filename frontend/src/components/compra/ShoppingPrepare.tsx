@@ -88,7 +88,7 @@ export default function ShoppingPrepare({
 
   return (
     <>
-      <header className="sticky top-0 bg-surface border-b border-border-default px-4 py-4 z-10 flex items-center justify-between">
+      <header className="sticky top-0 md:top-12 bg-surface border-b border-border-default px-4 py-4 z-10 flex items-center justify-between">
         <h1 className="text-xl font-bold text-primary">
           <span className="mr-1.5">🛒</span>{isAdding ? "Añadir productos" : "Preparar compra"}
         </h1>
@@ -109,7 +109,7 @@ export default function ShoppingPrepare({
         <div className="p-4">
           {!activeCategory ? (
             /* ── Category grid ── */
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 md:grid-cols-5 gap-3 md:gap-2">
               {categoriesWithProducts.map((slug) => {
                 const catProducts = products.filter((p) => p.category === slug);
                 const total = catProducts.length;
@@ -120,14 +120,14 @@ export default function ShoppingPrepare({
                   <button
                     key={slug}
                     onClick={() => openCategory(slug)}
-                    className="relative flex flex-col items-center justify-center gap-1.5 p-4 rounded-2xl bg-surface-alt border border-border-default active:bg-pressed aspect-square"
+                    className="relative flex flex-col items-center justify-center gap-1.5 p-4 md:p-2.5 rounded-2xl md:rounded-xl bg-surface-alt border border-border-default active:bg-pressed hover:bg-pressed aspect-square"
                   >
                     {selectedInCat > 0 && (
                       <span className="absolute top-2 right-2 w-5 h-5 bg-accent text-inverted text-[10px] font-bold rounded-full flex items-center justify-center">
                         {selectedInCat}
                       </span>
                     )}
-                    <span className="text-3xl">{emojis[slug] ?? "📦"}</span>
+                    <span className="text-3xl md:text-2xl">{emojis[slug] ?? "📦"}</span>
                     <span className="text-xs font-medium text-secondary text-center leading-tight">
                       {labels[slug] ?? slug}
                     </span>
@@ -148,7 +148,7 @@ export default function ShoppingPrepare({
                 {labels[activeCategory] ?? activeCategory}
               </button>
 
-              <div className="grid grid-cols-3 gap-2.5">
+              <div className="grid grid-cols-3 md:grid-cols-5 gap-2.5 md:gap-2">
                 {categoryProducts.map((product) => {
                   const inSession = existingProductIds?.has(product.id) ?? false;
                   const isSelected = selected.has(product.id) || inSession;
@@ -157,7 +157,7 @@ export default function ShoppingPrepare({
                       key={product.id}
                       onClick={() => toggleProduct(product.id)}
                       className={cn(
-                        "relative flex flex-col items-center justify-center rounded-2xl border-2 p-3 gap-1 aspect-square transition-colors",
+                        "relative flex flex-col items-center justify-center rounded-2xl md:rounded-xl border-2 p-3 md:p-2 gap-1 aspect-square transition-colors",
                         isSelected
                           ? "border-accent bg-accent-soft"
                           : product.units === 0
@@ -186,7 +186,7 @@ export default function ShoppingPrepare({
                         </span>
                       )}
 
-                      <span className="text-2xl leading-none mt-1">
+                      <span className="text-2xl md:text-xl leading-none mt-1">
                         {product.icon || "📦"}
                       </span>
 
@@ -209,7 +209,7 @@ export default function ShoppingPrepare({
                 {/* Back card */}
                 <button
                   onClick={() => { closeCategory(); history.back(); }}
-                  className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border-strong p-3 gap-1 aspect-square text-faint active:bg-surface-alt"
+                  className="flex flex-col items-center justify-center rounded-2xl md:rounded-xl border-2 border-dashed border-border-strong p-3 md:p-2 gap-1 aspect-square text-faint active:bg-surface-alt hover:bg-surface-alt"
                 >
                   <Undo2 size={22} />
                   <span className="text-[11px] font-medium">Volver</span>
@@ -222,7 +222,7 @@ export default function ShoppingPrepare({
 
       {/* Bottom bar */}
       {(totalNew > 0 || isAdding) && (
-        <div className="fixed bottom-16 left-0 right-0 px-4 pb-4 pt-2 bg-gradient-to-t from-surface via-surface to-surface/0 z-30">
+        <div className="fixed bottom-16 md:bottom-0 left-0 right-0 px-4 pb-4 pt-2 bg-gradient-to-t from-surface via-surface to-surface/0 z-30">
           <div className="flex gap-3">
             {isAdding && (
               <button
