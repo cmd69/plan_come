@@ -7,7 +7,7 @@ services:
     ports:
       - "${APP_PORT:-3041}:3000"
     volumes:
-      - plancome_data:/data
+      - plancome-data:/data
     environment:
       - DATABASE_URL=${DATABASE_URL:-file:/data/plancome.db}
       - NEXT_TELEMETRY_DISABLED=1
@@ -20,4 +20,4 @@ services:
       retries: 3
 
 volumes:
-  plancome_data:
+  plancome-data:
