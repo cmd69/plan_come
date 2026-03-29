@@ -28,14 +28,17 @@ deploy: ## Deploy: pull imagen, recrear contenedor
 
 backup: ## Hacer backup de la BD -> backups/plancome_YYYYMMDD_HHMMSS.db
 	@mkdir -p backups
-	@[ -f data/plancome.db ] || (echo "No existe data/plancome.db"; exit 1)
-	@cp data/plancome.db backups/plancome_$$(date +%Y%m%d_%H%M%S).db
+	@docker compose stop app
+	@docker cp plancome:/data/plancome.db backups/plancome_$$(date +%Y%m%d_%H%M%S).db
+	@docker compose start app
 	@echo "Backup guardado en backups/"
 
 restore: ## Restaurar backup (uso: make restore FILE=backups/plancome_XXX.db)
 	@[ -n "$(FILE)" ] || (echo "Error: indica el fichero -> make restore FILE=backups/plancome_XXX.db"; exit 1)
 	@[ -f $(FILE) ] || (echo "Error: no existe $(FILE)"; exit 1)
-	@cp $(FILE) data/plancome.db
+	@docker compose stop app
+	@docker cp $(FILE) plancome:/data/plancome.db
+	@docker compose start app
 	@echo "BD restaurada desde $(FILE)"
 
 # === Setup ===
