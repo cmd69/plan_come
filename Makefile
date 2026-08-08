@@ -2,6 +2,8 @@
 
 .PHONY: help up down logs build setup deploy backup restore
 
+BACKUP_DIR ?= backups
+
 help: ## Mostrar esta ayuda
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
 	  awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -26,12 +28,12 @@ deploy: ## Deploy: pull imagen, recrear contenedor
 
 # === Base de datos ===
 
-backup: ## Hacer backup de la BD -> backups/plancome_YYYYMMDD_HHMMSS.db
-	@mkdir -p backups
+backup: ## Hacer backup de la BD -> $(BACKUP_DIR)/plancome_YYYYMMDD_HHMMSS.db. Override: BACKUP_DIR=<ruta>
+	@mkdir -p $(BACKUP_DIR)
 	@docker compose stop app
-	@docker cp plancome:/data/plancome.db backups/plancome_$$(date +%Y%m%d_%H%M%S).db
+	@docker cp plancome:/data/plancome.db $(BACKUP_DIR)/plancome_$$(date +%Y%m%d_%H%M%S).db
 	@docker compose start app
-	@echo "Backup guardado en backups/"
+	@echo "Backup guardado en $(BACKUP_DIR)/"
 
 restore: ## Restaurar backup (uso: make restore FILE=backups/plancome_XXX.db)
 	@[ -n "$(FILE)" ] || (echo "Error: indica el fichero -> make restore FILE=backups/plancome_XXX.db"; exit 1)
